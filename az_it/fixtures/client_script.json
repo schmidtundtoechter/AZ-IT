@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Customer",
+  "enabled": 1,
+  "modified": "2025-10-21 11:44:52.605184",
+  "module": "Az It",
+  "name": "Internal Customer Series",
+  "script": "frappe.ui.form.on('Customer', {\n    onload: function(frm) {\n        // Only proceed if the internal customer number field is empty\n        if (!frm.doc.custom_interne_kundennummer) {\n            generate_customer_number(frm);\n        }\n    },\n    \n    refresh: function(frm) {\n        // Also check on refresh to handle existing documents\n        if (!frm.doc.custom_interne_kundennummer) {\n            generate_customer_number(frm);\n        }\n    }\n});\n\nfunction generate_customer_number(frm) {\n    // Make a server call to get the next customer number\n    frappe.call({\n        method: 'frappe.client.get_list',\n        args: {\n            doctype: 'Customer',\n            fields: ['custom_interne_kundennummer'],\n            filters: [\n                ['custom_interne_kundennummer', '!=', ''],\n                ['custom_interne_kundennummer', '>=', '20000']  // Only consider numbers >= 20000\n            ],\n            order_by: 'custom_interne_kundennummer desc',\n            limit_page_length: 1\n        },\n        callback: function(r) {\n            let next_number = 20000; // Starting number\n            \n            if (r.message && r.message.length > 0) {\n                let highest_number = r.message[0].custom_interne_kundennummer;\n                \n                // Convert to integer and add 1\n                let current_number = parseInt(highest_number);\n                \n                if (!isNaN(current_number) && current_number >= 20000) {\n                    next_number = current_number + 1;\n                }\n            }\n            \n            // Set the value in the field (exactly 5 characters)\n            frm.set_value('custom_interne_kundennummer', String(next_number).padStart(5, '0'));\n        }\n    });\n}",
+  "view": "Form"
+ }
+]

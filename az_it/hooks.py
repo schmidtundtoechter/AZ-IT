@@ -177,6 +177,9 @@ app_license = "mit"
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "az_it.event.get_events"
 # }
+override_whitelisted_methods = {
+    "erpnext.crm.doctype.lead.lead.make_opportunity": "az_it.az_it.python_scripts.overrides.lead.make_opportunity"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -242,3 +245,12 @@ app_license = "mit"
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+fixtures = [
+     {
+        "doctype": "Client Script",
+        "filters": [
+            ["name", "in", [
+                "Internal Customer Series" , 
+                            ]]
+        ]
+    } ]
