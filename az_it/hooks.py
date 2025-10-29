@@ -253,4 +253,15 @@ fixtures = [
                 "Internal Customer Series" , 
                             ]]
         ]
-    } ]
+    },
+     {
+        "doctype": "Server Script",
+        "filters": [
+            ["name", "in", [
+                "Customer Internal Number Auto Assignment - Update" , 
+                "Customer Internal Number Auto Assignment"
+                            ]]
+        ]
+    }
+     
+      ]
