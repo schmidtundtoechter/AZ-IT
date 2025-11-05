@@ -259,7 +259,8 @@ fixtures = [
         "filters": [
             ["name", "in", [
                 "Customer Internal Number Auto Assignment - Update" , 
-                "Customer Internal Number Auto Assignment"
+                "Customer Internal Number Auto Assignment" , 
+                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v2"
                             ]]
         ]
     }
