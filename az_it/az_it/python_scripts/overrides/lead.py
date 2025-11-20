@@ -5,34 +5,44 @@ from frappe.model.mapper import get_mapped_doc
 @frappe.whitelist()
 def make_opportunity(source_name, target_doc=None):
     """
-    Custom override to fetch contact details from linked Contact's primary email and mobile
-    instead of Lead's direct fields
+    Custom override to fetch contact details from Lead's custom_aktueller_primärkontakt field
+    instead of Lead's direct fields or general linked contact
     """
     def set_missing_values(source, target):
-        # Get the linked contact for this lead
-        contact_name = get_primary_contact_for_lead(source.name)
+        # Get the primary contact from custom field
+        primary_contact_name = getattr(source, 'custom_aktueller_primärkontakt', None)
         
-        if contact_name:
-            # Fetch primary email and mobile from Contact
-            primary_email = get_primary_email_from_contact(contact_name)
-            primary_mobile = get_primary_mobile_from_contact(contact_name)
+        if primary_contact_name:
+            # Fetch primary email and mobile from the specific Contact
+            primary_email = get_primary_email_from_contact(primary_contact_name)
+            primary_mobile = get_primary_mobile_from_contact(primary_contact_name)
             
-            # Set the contact details from Contact doctype
+            # Set contact details from the custom primary contact
             target.contact_email = primary_email or source.email_id
             target.contact_mobile = primary_mobile or source.mobile_no
         else:
-            # Fallback to Lead's direct fields if no contact linked
-            target.contact_email = source.email_id
-            target.contact_mobile = source.mobile_no
+            # Fallback 1: Try to get from any linked Contact (original approach)
+            general_contact_name = get_primary_contact_for_lead(source.name)
+            
+            if general_contact_name:
+                primary_email = get_primary_email_from_contact(general_contact_name)
+                primary_mobile = get_primary_mobile_from_contact(general_contact_name)
+                
+                target.contact_email = primary_email or source.email_id
+                target.contact_mobile = primary_mobile or source.mobile_no
+            else:
+                # Fallback 2: Use Lead's direct fields
+                target.contact_email = source.email_id
+                target.contact_mobile = source.mobile_no
         
         # Set other required fields
         target.contact_display = source.lead_name
         target.customer_name = source.company_name
         
-        # Set address and contact person details (same as original)
+        # Set address and contact person details
         _set_missing_values_for_opportunity(source, target)
 
-    # Create the mapped document (same mapping as original, but WITHOUT direct email/mobile mapping)
+    # Create the mapped document (same mapping as before)
     target_doc = get_mapped_doc(
         "Lead",
         source_name,
@@ -47,9 +57,7 @@ def make_opportunity(source_name, target_doc=None):
                     "company_name": "customer_name",
                     "lead_owner": "opportunity_owner",
                     "notes": "notes",
-                    # NOTE: We removed these two mappings:
-                    # "email_id": "contact_email",  # We'll set this in set_missing_values
-                    # "mobile_no": "contact_mobile", # We'll set this in set_missing_values
+                    # We handle email/mobile in set_missing_values
                 },
             }
         },
@@ -62,7 +70,7 @@ def make_opportunity(source_name, target_doc=None):
 
 def get_primary_contact_for_lead(lead_name):
     """
-    Get the primary contact linked to the lead
+    Get any contact linked to the lead (fallback method)
     """
     contact = frappe.db.sql("""
         SELECT parent 
@@ -78,8 +86,12 @@ def get_primary_contact_for_lead(lead_name):
 
 def get_primary_email_from_contact(contact_name):
     """
-    Get primary email from Contact's email_ids child table
+    Get primary email from Contact's Email IDs child table
+    Priority: Primary email first, then first available email
     """
+    if not contact_name:
+        return None
+        
     # First try to get the primary email
     primary_email = frappe.db.sql("""
         SELECT email_id 
@@ -108,8 +120,12 @@ def get_primary_email_from_contact(contact_name):
 
 def get_primary_mobile_from_contact(contact_name):
     """
-    Get primary mobile from Contact's phone_nos child table
+    Get primary mobile from Contact's Contact Numbers child table
+    Priority: Primary mobile first, then first available number
     """
+    if not contact_name:
+        return None
+        
     # First try to get the primary mobile
     primary_mobile = frappe.db.sql("""
         SELECT phone 
@@ -122,8 +138,8 @@ def get_primary_mobile_from_contact(contact_name):
     if primary_mobile:
         return primary_mobile[0][0]
     
-    # Fallback to first mobile/phone if no primary mobile is set
-    first_mobile = frappe.db.sql("""
+    # Fallback to first phone number (most important one by position)
+    first_phone = frappe.db.sql("""
         SELECT phone 
         FROM `tabContact Phone` 
         WHERE parent = %s 
@@ -133,12 +149,12 @@ def get_primary_mobile_from_contact(contact_name):
         LIMIT 1
     """, contact_name)
     
-    return first_mobile[0][0] if first_mobile else None
+    return first_phone[0][0] if first_phone else None
 
 
 def _set_missing_values_for_opportunity(source, target):
     """
-    Set address and contact person details (copied from original ERPNext function)
+    Set address and contact person details
     """
     address = frappe.get_all(
         "Dynamic Link",
