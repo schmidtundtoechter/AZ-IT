@@ -260,7 +260,9 @@ fixtures = [
             ["name", "in", [
                 "Customer Internal Number Auto Assignment - Update" , 
                 "Customer Internal Number Auto Assignment" , 
-                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v2"
+                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v2" , 
+                "Aufgabe (ToDo) automatische Wiedervorlage erzeugen (V2)" ,
+                "Lieferschein - ausliefernder_mitarbieter beim Speichern eintragen"
                             ]]
         ]
     }
