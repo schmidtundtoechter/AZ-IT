@@ -1,0 +1,21 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Sales Order",
+   "fieldname": "custom_wa_nummer",
+   "fieldtype": "Link",
+   "label": "WA Nummer",
+   "options": "WA Nummer",
+   "insert_after": "po_no",
+   "allow_on_submit": 1,
+   "in_list_view": 0,
+   "in_standard_filter": 1,
+   "description": "Support Contract Number - This field can be edited after booking"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Sales Order",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

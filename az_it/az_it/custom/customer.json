@@ -1,0 +1,25 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Customer",
+   "fieldname": "custom_wa_nummer_section",
+   "fieldtype": "Section Break",
+   "label": "WA Nummer (Support Contracts)",
+   "insert_after": "represents_company",
+   "collapsible": 1
+  },
+  {
+   "dt": "Customer",
+   "fieldname": "custom_wa_nummer",
+   "fieldtype": "HTML",
+   "label": "WA Nummer",
+   "insert_after": "custom_wa_nummer_section",
+   "options": "<div id=\"wa_nummer_list\"></div>"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Customer",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}
