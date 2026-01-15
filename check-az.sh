@@ -81,6 +81,15 @@ else
   show_debug "$(ping -c 1 deb.nodesource.com 2>&1)"
 fi
 
+# Test: deb.nodesource.com HTTPS
+CURL_OUTPUT=$(curl -sS -I https://deb.nodesource.com 2>&1)
+if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
+  test_pass "deb.nodesource.com HTTPS Verbindung"
+else
+  test_fail "deb.nodesource.com HTTPS fehlgeschlagen"
+  show_debug "$(curl -Iv https://deb.nodesource.com 2>&1)\n\nHinweis: Führen Sie './inspect-ca.sh deb.nodesource.com nodesource-root-ca.crt' aus, um das Zertifikat zu analysieren."
+fi
+
 # Test: DNS-Auflösung
 DNS_OUTPUT=$(getent hosts erptest.az-it.systems 2>&1)
 if echo "$DNS_OUTPUT" | grep -q "85.13.161.229"; then
@@ -101,7 +110,7 @@ if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
   test_pass "GitHub HTTPS Verbindung"
 else
   test_fail "GitHub HTTPS Verbindung fehlgeschlagen"
-  show_debug "$(curl -Iv https://github.com 2>&1)"
+  show_debug "$(curl -Iv https://github.com 2>&1)\n\nHinweis: Führen Sie './inspect-ca.sh github.com github-root-ca.crt' aus, um das Zertifikat zu analysieren."
 fi
 
 # Test: erptest HTTPS
@@ -110,7 +119,7 @@ if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
   test_pass "erptest.az-it.systems HTTPS Verbindung"
 else
   test_fail "erptest.az-it.systems HTTPS fehlgeschlagen"
-  show_debug "$(curl -Iv https://erptest.az-it.systems 2>&1)"
+  show_debug "$(curl -Iv https://erptest.az-it.systems 2>&1)\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Zertifikat zu analysieren."
 fi
 
 # ------------------------------------------------------------
