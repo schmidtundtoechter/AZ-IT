@@ -73,6 +73,14 @@ else
   show_debug "$(ping -c 1 erptest.az-it.systems 2>&1)"
 fi
 
+# Test: deb.nodesource.com erreichbar
+if ping -c 1 -W 2 deb.nodesource.com >/dev/null 2>&1; then
+  test_pass "deb.nodesource.com erreichbar"
+else
+  test_fail "deb.nodesource.com nicht erreichbar"
+  show_debug "$(ping -c 1 deb.nodesource.com 2>&1)"
+fi
+
 # Test: DNS-Auflösung
 DNS_OUTPUT=$(getent hosts erptest.az-it.systems 2>&1)
 if echo "$DNS_OUTPUT" | grep -q "85.13.161.229"; then
