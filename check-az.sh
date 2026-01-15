@@ -86,8 +86,17 @@ CURL_OUTPUT=$(curl -sS -I https://deb.nodesource.com 2>&1)
 if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
   test_pass "deb.nodesource.com HTTPS Verbindung"
 else
-  test_fail "deb.nodesource.com HTTPS fehlgeschlagen"
-  show_debug "$(curl -Iv https://deb.nodesource.com 2>&1)\n\nHinweis: Führen Sie './inspect-ca.sh deb.nodesource.com nodesource-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  CURL_VERBOSE=$(curl -Iv https://deb.nodesource.com 2>&1)
+  if echo "$CURL_VERBOSE" | grep -q "self-signed certificate"; then
+    test_fail "deb.nodesource.com HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh deb.nodesource.com nodesource-root-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
+  elif echo "$CURL_VERBOSE" | grep -qi "certificate.*name\|hostname.*mismatch\|subject alternative name"; then
+    test_fail "deb.nodesource.com HTTPS fehlgeschlagen: Hostname-Mismatch im Zertifikat"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh deb.nodesource.com nodesource-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  else
+    test_fail "deb.nodesource.com HTTPS fehlgeschlagen"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh deb.nodesource.com nodesource-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  fi
 fi
 
 # Test: DNS-Auflösung
@@ -109,8 +118,17 @@ CURL_OUTPUT=$(curl -sS -I https://github.com 2>&1)
 if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
   test_pass "GitHub HTTPS Verbindung"
 else
-  test_fail "GitHub HTTPS Verbindung fehlgeschlagen"
-  show_debug "$(curl -Iv https://github.com 2>&1)\n\nHinweis: Führen Sie './inspect-ca.sh github.com github-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  CURL_VERBOSE=$(curl -Iv https://github.com 2>&1)
+  if echo "$CURL_VERBOSE" | grep -q "self-signed certificate"; then
+    test_fail "GitHub HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh github.com github-root-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
+  elif echo "$CURL_VERBOSE" | grep -qi "certificate.*name\|hostname.*mismatch\|subject alternative name"; then
+    test_fail "GitHub HTTPS fehlgeschlagen: Hostname-Mismatch im Zertifikat"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh github.com github-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  else
+    test_fail "GitHub HTTPS Verbindung fehlgeschlagen"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh github.com github-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  fi
 fi
 
 # Test: erptest HTTPS
@@ -118,8 +136,17 @@ CURL_OUTPUT=$(curl -sS -I https://erptest.az-it.systems 2>&1)
 if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
   test_pass "erptest.az-it.systems HTTPS Verbindung"
 else
-  test_fail "erptest.az-it.systems HTTPS fehlgeschlagen"
-  show_debug "$(curl -Iv https://erptest.az-it.systems 2>&1)\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  CURL_VERBOSE=$(curl -Iv https://erptest.az-it.systems 2>&1)
+  if echo "$CURL_VERBOSE" | grep -q "self-signed certificate"; then
+    test_fail "erptest.az-it.systems HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
+  elif echo "$CURL_VERBOSE" | grep -qi "certificate.*name\|hostname.*mismatch\|subject alternative name"; then
+    test_fail "erptest.az-it.systems HTTPS fehlgeschlagen: Hostname-Mismatch im Zertifikat"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  else
+    test_fail "erptest.az-it.systems HTTPS fehlgeschlagen"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Zertifikat zu analysieren."
+  fi
 fi
 
 # ------------------------------------------------------------
