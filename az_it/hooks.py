@@ -251,25 +251,36 @@ override_whitelisted_methods = {
 # }
 
 fixtures = [
-     {
+    {
         "doctype": "Client Script",
         "filters": [
             ["name", "in", [
-                "Internal Customer Series" , 
-                            ]]
+                "Internal Customer Series",
+            ]]
         ]
     },
-     {
+    {
         "doctype": "Server Script",
         "filters": [
             ["name", "in", [
-                "Customer Internal Number Auto Assignment - Update" , 
-                "Customer Internal Number Auto Assignment" , 
-                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v2" , 
-                "Aufgabe (ToDo) automatische Wiedervorlage erzeugen (V2)" ,
-                "Lieferschein - ausliefernder_mitarbieter beim Speichern eintragen"
-                            ]]
+                "Customer Internal Number Auto Assignment - Update",
+                "Customer Internal Number Auto Assignment",
+                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v2",
+                "Aufgabe (ToDo) automatische Wiedervorlage erzeugen (V2)",
+                "Lieferschein - ausliefernder_mitarbieter beim Speichern eintragen",
+            ]]
         ]
-    }
-     
-      ]
+    },
+    {
+        "doctype": "Custom Field",
+        "filters": [
+            ["dt", "=", "Delivery Note"]
+        ]
+    },
+    {
+        "doctype": "Property Setter",
+        "filters": [
+            ["doc_type", "=", "Delivery Note"]
+        ]
+    },
+]
