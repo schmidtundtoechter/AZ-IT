@@ -149,6 +149,52 @@ else
   fi
 fi
 
+# Test: Google Fonts domains (fonts.googleapis.com)
+CURL_OUTPUT=$(curl -sS -I https://fonts.googleapis.com 2>&1)
+if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302\|HTTP.*404"; then
+  test_pass "fonts.googleapis.com HTTPS Verbindung"
+else
+  CURL_VERBOSE=$(curl -Iv https://fonts.googleapis.com 2>&1)
+  if echo "$CURL_VERBOSE" | grep -q "self-signed certificate"; then
+    test_fail "fonts.googleapis.com HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh fonts.googleapis.com google-fonts-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
+  elif echo "$CURL_VERBOSE" | grep -qi "Connection reset by peer"; then
+    test_fail "fonts.googleapis.com HTTPS fehlgeschlagen: Connection reset by peer (Firewall/Proxy?)"
+    show_debug "$CURL_VERBOSE"
+  else
+    test_fail "fonts.googleapis.com HTTPS Verbindung fehlgeschlagen"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh fonts.googleapis.com google-fonts-ca.crt' aus, um das Zertifikat zu analysieren."
+  fi
+fi
+
+# Test: Google Fonts static domain (fonts.gstatic.com)
+CURL_OUTPUT=$(curl -sS -I https://fonts.gstatic.com 2>&1)
+if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302\|HTTP.*404"; then
+  test_pass "fonts.gstatic.com HTTPS Verbindung"
+else
+  CURL_VERBOSE=$(curl -Iv https://fonts.gstatic.com 2>&1)
+  if echo "$CURL_VERBOSE" | grep -q "self-signed certificate"; then
+    test_fail "fonts.gstatic.com HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh fonts.gstatic.com google-gstatic-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
+  elif echo "$CURL_VERBOSE" | grep -qi "Connection reset by peer"; then
+    test_fail "fonts.gstatic.com HTTPS fehlgeschlagen: Connection reset by peer (Firewall/Proxy?)"
+    show_debug "$CURL_VERBOSE"
+  else
+    test_fail "fonts.gstatic.com HTTPS Verbindung fehlgeschlagen"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh fonts.gstatic.com google-gstatic-ca.crt' aus, um das Zertifikat zu analysieren."
+  fi
+fi
+
+# Test: Google Main domain (www.google.com) - Vergleichstest
+CURL_OUTPUT=$(curl -sS -I https://www.google.com 2>&1)
+if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
+  test_pass "www.google.com HTTPS Verbindung (Vergleichstest)"
+else
+  CURL_VERBOSE=$(curl -Iv https://www.google.com 2>&1)
+  test_fail "www.google.com HTTPS Verbindung fehlgeschlagen"
+  show_debug "$CURL_VERBOSE"
+fi
+
 # ------------------------------------------------------------
 # 3. HTTPS / TLS – OpenSSL (SAN / Zertifikat)
 # ------------------------------------------------------------
