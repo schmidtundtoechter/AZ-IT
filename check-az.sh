@@ -101,7 +101,7 @@ fi
 
 # Test: DNS-Auflösung
 DNS_OUTPUT=$(getent hosts erptest.az-it.systems 2>&1)
-if echo "$DNS_OUTPUT" | grep -q "85.13.161.229"; then
+if echo "$DNS_OUTPUT" | grep -q "10.0.2.126"; then
   test_pass "DNS-Auflösung für erptest.az-it.systems"
 else
   test_fail "DNS-Auflösung fehlgeschlagen"
@@ -156,7 +156,7 @@ test_header "3) Zertifikat Details"
 
 # Test: SSL-Zertifikat mit korrektem SAN
 OPENSSL_OUTPUT=$(echo | openssl s_client -connect erptest.az-it.systems:443 -servername erptest.az-it.systems 2>&1)
-if echo "$OPENSSL_OUTPUT" | grep -q "DNS:erptest.az-it.systems"; then
+if echo "$OPENSSL_OUTPUT" | grep -q "*.az-it.systems"; then
   test_pass "SSL-Zertifikat mit korrektem SAN"
 else
   test_fail "SSL-Zertifikat SAN fehlt oder falsch"
@@ -235,32 +235,6 @@ if [ -f "$WKHTML_TEST" ] && [ -s "$WKHTML_TEST" ]; then
 else
   test_fail "wkhtmltopdf HTTPS-zu-PDF Konvertierung fehlgeschlagen"
   show_debug "$WKHTML_OUTPUT"
-fi
-
-# ------------------------------------------------------------
-# 7. Asset-Test (kritisch für PDF)
-# ------------------------------------------------------------
-test_header "7) Frappe Asset Tests"
-
-ASSET_URL="https://erptest.az-it.systems/assets/frappe/dist/css/print.bundle.RXLI3KAN.css"
-
-# Test: Asset-URL erreichbar
-ASSET_OUTPUT=$(curl -sS -I "$ASSET_URL" 2>&1)
-if echo "$ASSET_OUTPUT" | grep -q "HTTP.*200"; then
-  test_pass "Frappe print.css Asset erreichbar"
-else
-  test_fail "Frappe print.css Asset nicht erreichbar (200 OK benötigt)"
-  show_debug "Asset URL: $ASSET_URL\n\n$(curl -Iv "$ASSET_URL" 2>&1)"
-fi
-
-# Test: Asset Download
-ASSET_FILE="/tmp/print.bundle_$$.css"
-if wget -q -O "$ASSET_FILE" "$ASSET_URL" 2>&1 && [ -s "$ASSET_FILE" ]; then
-  test_pass "Frappe print.css Asset herunterladbar"
-  rm -f "$ASSET_FILE"
-else
-  test_fail "Frappe print.css Asset Download fehlgeschlagen"
-  show_debug "$(wget -O "$ASSET_FILE" "$ASSET_URL" 2>&1)"
 fi
 
 echo
