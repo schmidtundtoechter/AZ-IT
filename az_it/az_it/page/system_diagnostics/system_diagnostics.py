@@ -32,7 +32,6 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
         network_tests.append(test_ping('GitHub erreichbar', 'github.com'))
         network_tests.append(test_ping('erptest.az-it.systems erreichbar', 'erptest.az-it.systems'))
         network_tests.append(test_ping('deb.nodesource.com erreichbar', 'deb.nodesource.com'))
-        network_tests.append(test_https('deb.nodesource.com HTTPS Verbindung', 'https://deb.nodesource.com'))
         network_tests.append(test_dns('DNS-Auflösung für erptest.az-it.systems', 'erptest.az-it.systems', '10.0.2.126'))
         
         results['categories']['1) Netzwerk & DNS Tests'] = {'tests': network_tests}
@@ -40,6 +39,7 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
     # Kategorie 2: HTTPS / TLS
     if run_https_tests:
         https_tests = []
+        https_tests.append(test_https('deb.nodesource.com HTTPS Verbindung', 'https://deb.nodesource.com'))
         https_tests.append(test_https('GitHub HTTPS Verbindung', 'https://github.com'))
         https_tests.append(test_https('erptest.az-it.systems HTTPS Verbindung', 'https://erptest.az-it.systems'))
         https_tests.append(test_https('fonts.googleapis.com HTTPS Verbindung', 'https://fonts.googleapis.com'))
@@ -52,6 +52,7 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
     if run_cert_tests:
         cert_tests = []
         cert_tests.append(test_ssl_cert('SSL-Zertifikat mit korrektem SAN', 'erptest.az-it.systems'))
+        cert_tests.append(test_ssl_validation('SSL-Zertifikat Validierung erfolgreich', 'erptest.az-it.systems'))
         
         results['categories']['3) Zertifikat Details'] = {'tests': cert_tests}
     
@@ -132,11 +133,22 @@ def test_dns(name, host, expected_ip):
 
 
 def test_ssl_cert(name, host):
-    """Test SSL certificate"""
+    """Test SSL certificate SAN"""
     cmd = f'echo | openssl s_client -connect {host}:443 -servername {host} 2>&1'
     returncode, stdout, stderr = run_command(cmd)
     
-    passed = '*.az-it.systems' in stdout and 'Verify return code: 0 (ok)' in stdout
+    passed = '*.az-it.systems' in stdout
+    debug = stdout if not passed else ''
+    
+    return {'name': name, 'passed': passed, 'debug': debug}
+
+
+def test_ssl_validation(name, host):
+    """Test SSL certificate validation"""
+    cmd = f'echo | openssl s_client -connect {host}:443 -servername {host} 2>&1'
+    returncode, stdout, stderr = run_command(cmd)
+    
+    passed = 'Verify return code: 0 (ok)' in stdout
     debug = stdout if not passed else ''
     
     return {'name': name, 'passed': passed, 'debug': debug}
