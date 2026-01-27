@@ -9,9 +9,16 @@ from frappe import _
 @frappe.whitelist(allow_guest=True)
 def get_system_info():
     """Get basic system information"""
+    # Username über bash-Befehl holen
+    returncode, username, stderr = run_command('whoami')
+    if returncode != 0 or not username.strip():
+        username = 'unknown'
+    else:
+        username = username.strip()
+    
     return {
         'hostname': socket.gethostname(),
-        'username': os.getenv('USER', 'unknown')
+        'username': username
     }
 
 
@@ -32,7 +39,7 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
         network_tests.append(test_ping('GitHub erreichbar', 'github.com'))
         network_tests.append(test_ping('erptest.az-it.systems erreichbar', 'erptest.az-it.systems'))
         network_tests.append(test_ping('deb.nodesource.com erreichbar', 'deb.nodesource.com'))
-        network_tests.append(test_dns('DNS-Auflösung für erptest.az-it.systems', 'erptest.az-it.systems', '10.0.2.126'))
+        network_tests.append(test_dns('DNS-Auflösung für erptest.az-it.systems', 'erptest.az-it.systems'))
         
         results['categories']['1) Netzwerk & DNS Tests'] = {'tests': network_tests}
     
@@ -124,12 +131,50 @@ def test_https(name, url):
     return {'name': name, 'passed': passed, 'debug': debug}
 
 
-def test_dns(name, host, expected_ip):
-    """Test DNS resolution"""
+def test_dns(name, host):
+    """Test DNS resolution against own IP"""
+    # Ermittle die eigene IP-Adresse (ursprünglich war es 10.0.2.126)
+    import socket
+    
+    # Versuche eigene IP zu ermitteln
+    own_ip = ''
+    try:
+        # Methode 1: Socket-Verbindung zu externem Host
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        own_ip = s.getsockname()[0]
+        s.close()
+    except:
+        # Methode 2: hostname -I
+        returncode, stdout, stderr = run_command('hostname -I')
+        if returncode == 0 and stdout.strip():
+            own_ip = stdout.strip().split()[0]
+    
+    if not own_ip:
+        # Methode 3: ip addr show
+        returncode, stdout, stderr = run_command('ip addr show')
+        if returncode == 0:
+            import re
+            ips = re.findall(r'inet (\d+\.\d+\.\d+\.\d+)', stdout)
+            for ip in ips:
+                if ip != '127.0.0.1':
+                    own_ip = ip
+                    break
+    
+    # DNS-Auflösung durchführen
     returncode, stdout, stderr = run_command(f'getent hosts {host}')
-    passed = returncode == 0 and expected_ip in stdout
-    debug = stdout + stderr if not passed else ''
-    return {'name': name, 'passed': passed, 'debug': debug}
+    
+    if returncode != 0 or not stdout.strip():
+        debug = f"Erwartete IP (eigene): {own_ip}\nDNS-Ausgabe: {stdout + stderr}\n\nFehler: {host} konnte nicht aufgelöst werden"
+        return {'name': name, 'passed': False, 'debug': debug}
+    
+    resolved_ip = stdout.strip().split()[0] if stdout.strip() else ''
+    
+    if own_ip and resolved_ip == own_ip:
+        return {'name': f'{name} → {own_ip}', 'passed': True, 'debug': ''}
+    else:
+        debug = f"Erwartete IP (eigene): {own_ip}\nAufgelöste IP: {resolved_ip}\n\nVollständige DNS-Ausgabe:\n{stdout}"
+        return {'name': name, 'passed': False, 'debug': debug}
 
 
 def test_ssl_cert(name, host):

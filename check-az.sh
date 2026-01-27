@@ -93,7 +93,7 @@ show_debug() {
   if [ $VERBOSE -eq 1 ]; then
     echo -e "${YELLOW}Debug-Ausgabe:${NC}"
     echo "----------------------------------------"
-    echo "$1"
+    echo -e "$1"
     echo "----------------------------------------"
     echo
   fi
@@ -129,6 +129,33 @@ else
   show_debug "$(ping -c 1 deb.nodesource.com 2>&1)"
 fi
 
+# Test: DNS-Auflösung
+# Ermittle die eigene IP-Adresse (ursprünglich war es 10.0.2.126)
+OWN_IP=$(hostname -I | awk '{print $1}')
+if [ -z "$OWN_IP" ]; then
+  OWN_IP=$(ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -1)
+fi
+
+DNS_OUTPUT=$(getent hosts erptest.az-it.systems 2>&1)
+RESOLVED_IP=$(echo "$DNS_OUTPUT" | awk '{print $1}')
+
+if echo "$DNS_OUTPUT" | grep -q "$OWN_IP"; then
+  test_pass "DNS-Auflösung für erptest.az-it.systems → $OWN_IP"
+else
+  if [ -z "$RESOLVED_IP" ]; then
+    test_fail "DNS-Auflösung fehlgeschlagen: erptest.az-it.systems konnte nicht aufgelöst werden"
+    show_debug "Erwartete IP: $OWN_IP\nDNS-Ausgabe: $DNS_OUTPUT"
+  else
+    test_fail "DNS-Auflösung fehlgeschlagen: erptest.az-it.systems löst auf falsche IP auf"
+    show_debug "Erwartete IP (eigene): $OWN_IP\nAufgelöste IP: $RESOLVED_IP\nVollständige DNS-Ausgabe:\n$DNS_OUTPUT"
+  fi
+fi
+
+# ------------------------------------------------------------
+# 2. HTTPS / TLS – CURL
+# ------------------------------------------------------------
+test_header "2) HTTPS / TLS Tests (curl)"
+
 # Test: deb.nodesource.com HTTPS
 CURL_OUTPUT=$(curl -sS -I https://deb.nodesource.com 2>&1)
 if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
@@ -146,20 +173,6 @@ else
     show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh deb.nodesource.com nodesource-root-ca.crt' aus, um das Zertifikat zu analysieren."
   fi
 fi
-
-# Test: DNS-Auflösung
-DNS_OUTPUT=$(getent hosts erptest.az-it.systems 2>&1)
-if echo "$DNS_OUTPUT" | grep -q "10.0.2.126"; then
-  test_pass "DNS-Auflösung für erptest.az-it.systems"
-else
-  test_fail "DNS-Auflösung fehlgeschlagen"
-  show_debug "$DNS_OUTPUT"
-fi
-
-# ------------------------------------------------------------
-# 2. HTTPS / TLS – CURL
-# ------------------------------------------------------------
-test_header "2) HTTPS / TLS Tests (curl)"
 
 # Test: GitHub HTTPS
 CURL_OUTPUT=$(curl -sS -I https://github.com 2>&1)
