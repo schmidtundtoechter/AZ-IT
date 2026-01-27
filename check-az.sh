@@ -11,10 +11,56 @@ BLUE='\033[0;34m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
+# Standard-Konfiguration
+VERBOSE=0
+SUDO_TEST=0
+
 # Test-Ergebnisse
 TESTS_PASSED=0
 TESTS_FAILED=0
 FAILED_TESTS=()
+
+# ------------------------------------------------------------
+# Hilfsfunktion: Usage
+# ------------------------------------------------------------
+usage() {
+  echo "Usage: $0 [OPTIONS]"
+  echo
+  echo "Optionen:"
+  echo "  -v, --verbose    Zeige Debug-Ausgaben an"
+  echo "  -s, --sudo       Führe sudo Node.js-Tests durch"
+  echo "  -h, --help       Zeige diese Hilfe an"
+  echo
+  echo "Beispiele:"
+  echo "  $0               # Normale Ausführung ohne Debug-Ausgaben"
+  echo "  $0 -v            # Mit Debug-Ausgaben"
+  echo "  $0 -s            # Mit sudo Node.js-Tests"
+  echo "  $0 -v -s         # Mit Debug-Ausgaben und sudo-Tests"
+  exit 0
+}
+
+# ------------------------------------------------------------
+# Argument-Parsing
+# ------------------------------------------------------------
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -v|--verbose)
+      VERBOSE=1
+      shift
+      ;;
+    -s|--sudo)
+      SUDO_TEST=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      echo "Unbekannte Option: $1"
+      usage
+      ;;
+  esac
+done
 
 echo -e "${BOLD}============================================================${NC}"
 echo -e "${BOLD} SYSTEMDIAGNOSE – PDF / TLS / WKHTMLTOPDF / NODE${NC}"
@@ -44,11 +90,13 @@ test_header() {
 }
 
 show_debug() {
-  echo -e "${YELLOW}Debug-Ausgabe:${NC}"
-  echo "----------------------------------------"
-  echo "$1"
-  echo "----------------------------------------"
-  echo
+  if [ $VERBOSE -eq 1 ]; then
+    echo -e "${YELLOW}Debug-Ausgabe:${NC}"
+    echo "----------------------------------------"
+    echo "$1"
+    echo "----------------------------------------"
+    echo
+  fi
 }
 
 
@@ -220,10 +268,7 @@ fi
 # ------------------------------------------------------------
 # 4. Node.js – User vs. sudo
 # ------------------------------------------------------------
-echo
-read -p "Möchten Sie die Node.js-Tests durchführen? (j/n): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Jj]$ ]]; then
+if [ $SUDO_TEST -eq 1 ]; then
   test_header "4) Node.js Umgebung"
 
   # Test: Node.js verfügbar
@@ -252,7 +297,8 @@ if [[ $REPLY =~ ^[Jj]$ ]]; then
     show_debug "$SUDO_NODE_VERSION"
   fi
 else
-  echo -e "${YELLOW}Node.js-Tests übersprungen.${NC}"
+  echo
+  echo -e "${YELLOW}Node.js sudo-Tests übersprungen. Verwenden Sie -s oder --sudo zum Aktivieren.${NC}"
 fi
 
 # ------------------------------------------------------------
