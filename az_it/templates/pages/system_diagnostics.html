@@ -1,0 +1,334 @@
+{% extends "templates/web.html" %}
+
+{% block title %}System Diagnostics{% endblock %}
+
+{% block page_content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h1 class="mb-0">
+                <i class="fa fa-stethoscope"></i> System-Diagnose
+            </h1>
+            <p class="mb-0 mt-2">PDF / TLS / WKHTMLTOPDF / NODE Tests</p>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="info-box">
+                        <strong>Host:</strong> <span id="hostname">-</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-box">
+                        <strong>Benutzer:</strong> <span id="username">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="runNodeTests" checked>
+                    <label class="form-check-label" for="runNodeTests">
+                        Node.js Tests durchführen
+                    </label>
+                </div>
+            </div>
+
+            <button id="runDiagnostics" class="btn btn-lg btn-primary btn-block mb-4">
+                <i class="fa fa-play-circle"></i> Diagnose starten
+            </button>
+
+            <div id="loadingIndicator" class="text-center mb-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Tests werden ausgeführt...</span>
+                </div>
+                <p class="mt-2">Tests werden ausgeführt, bitte warten...</p>
+            </div>
+
+            <div id="resultsContainer" style="display: none;">
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0">
+                            <i class="fa fa-chart-bar"></i> Zusammenfassung
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-6">
+                                <div class="summary-box success-box">
+                                    <h2 id="passedCount" class="display-4">0</h2>
+                                    <p class="text-success"><i class="fa fa-check-circle"></i> Tests bestanden</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="summary-box failure-box">
+                                    <h2 id="failedCount" class="display-4">0</h2>
+                                    <p class="text-danger"><i class="fa fa-times-circle"></i> Tests fehlgeschlagen</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 30px;">
+                            <div id="successProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            <div id="failureProgress" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="testResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-box {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    .summary-box {
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px;
+    }
+
+    .success-box {
+        background: #d4edda;
+        border: 2px solid #28a745;
+    }
+
+    .failure-box {
+        background: #f8d7da;
+        border: 2px solid #dc3545;
+    }
+
+    .test-category {
+        margin-bottom: 20px;
+    }
+
+    .test-category-header {
+        background: #007bff;
+        color: white;
+        padding: 15px;
+        border-radius: 5px 5px 0 0;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    .test-category-body {
+        border: 2px solid #007bff;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        padding: 15px;
+    }
+
+    .test-item {
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+    }
+
+    .test-item:hover {
+        transform: translateX(5px);
+    }
+
+    .test-item.passed {
+        background: #d4edda;
+        border-left: 5px solid #28a745;
+    }
+
+    .test-item.failed {
+        background: #f8d7da;
+        border-left: 5px solid #dc3545;
+    }
+
+    .test-icon {
+        font-size: 1.5em;
+        margin-right: 15px;
+        min-width: 30px;
+    }
+
+    .test-icon.passed {
+        color: #28a745;
+    }
+
+    .test-icon.failed {
+        color: #dc3545;
+    }
+
+    .test-message {
+        flex-grow: 1;
+    }
+
+    .debug-output {
+        margin-top: 10px;
+        padding: 15px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 0.9em;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .debug-toggle {
+        cursor: pointer;
+        color: #007bff;
+        text-decoration: underline;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+
+    .btn-block {
+        width: 100%;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    #loadingIndicator {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+</style>
+
+<script>
+    frappe.ready(function() {
+        // System-Info laden
+        frappe.call({
+            method: "az_it.az_it.page.system_diagnostics.system_diagnostics.get_system_info",
+            callback: function(r) {
+                if (r.message) {
+                    $('#hostname').text(r.message.hostname);
+                    $('#username').text(r.message.username);
+                }
+            }
+        });
+
+        // Diagnose-Button Handler
+        $('#runDiagnostics').click(function() {
+            const runNodeTests = $('#runNodeTests').is(':checked');
+            
+            // UI zurücksetzen
+            $('#resultsContainer').hide();
+            $('#testResults').empty();
+            $('#loadingIndicator').show();
+            $(this).prop('disabled', true);
+
+            // Tests ausführen
+            frappe.call({
+                method: "az_it.az_it.page.system_diagnostics.system_diagnostics.run_diagnostics",
+                args: {
+                    run_node_tests: runNodeTests
+                },
+                callback: function(r) {
+                    $('#loadingIndicator').hide();
+                    $('#runDiagnostics').prop('disabled', false);
+
+                    if (r.message) {
+                        displayResults(r.message);
+                    } else {
+                        frappe.msgprint('Fehler beim Ausführen der Tests');
+                    }
+                }
+            });
+        });
+    });
+
+    function displayResults(data) {
+        // Zusammenfassung anzeigen
+        const passed = data.tests_passed;
+        const failed = data.tests_failed;
+        const total = passed + failed;
+        
+        $('#passedCount').text(passed);
+        $('#failedCount').text(failed);
+        
+        const passedPercent = total > 0 ? (passed / total * 100) : 0;
+        const failedPercent = total > 0 ? (failed / total * 100) : 0;
+        
+        $('#successProgress').css('width', passedPercent + '%').text(passedPercent.toFixed(0) + '%');
+        $('#failureProgress').css('width', failedPercent + '%').text(failedPercent.toFixed(0) + '%');
+
+        // Test-Kategorien anzeigen
+        const categories = data.categories;
+        let html = '';
+        
+        for (let categoryName in categories) {
+            const category = categories[categoryName];
+            html += `
+                <div class="test-category">
+                    <div class="test-category-header">
+                        <i class="fa fa-folder-open"></i> ${categoryName}
+                    </div>
+                    <div class="test-category-body">
+            `;
+            
+            category.tests.forEach(test => {
+                const statusClass = test.passed ? 'passed' : 'failed';
+                const icon = test.passed ? 'fa-check-circle' : 'fa-times-circle';
+                
+                html += `
+                    <div class="test-item ${statusClass}">
+                        <div class="test-icon ${statusClass}">
+                            <i class="fa ${icon}"></i>
+                        </div>
+                        <div class="test-message">
+                            <strong>${test.name}</strong>
+                `;
+                
+                if (test.debug && test.debug.trim()) {
+                    const debugId = 'debug-' + Math.random().toString(36).substr(2, 9);
+                    html += `
+                        <div class="debug-toggle" onclick="$('#${debugId}').toggle()">
+                            <i class="fa fa-info-circle"></i> Debug-Ausgabe anzeigen
+                        </div>
+                        <div id="${debugId}" class="debug-output" style="display: none;">
+                            ${escapeHtml(test.debug)}
+                        </div>
+                    `;
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        $('#testResults').html(html);
+        $('#resultsContainer').show();
+        
+        // Zum Ergebnis scrollen
+        $('html, body').animate({
+            scrollTop: $('#resultsContainer').offset().top - 100
+        }, 500);
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+</script>
+{% endblock %}
