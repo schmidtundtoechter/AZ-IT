@@ -220,32 +220,39 @@ fi
 # ------------------------------------------------------------
 # 4. Node.js – User vs. sudo
 # ------------------------------------------------------------
-test_header "4) Node.js Umgebung"
+echo
+read -p "Möchten Sie die Node.js-Tests durchführen? (j/n): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Jj]$ ]]; then
+  test_header "4) Node.js Umgebung"
 
-# Test: Node.js verfügbar
-NODE_VERSION=$(node -v 2>&1)
-if [[ $NODE_VERSION =~ ^v[0-9]+ ]]; then
-  test_pass "Node.js verfügbar: $NODE_VERSION"
-else
-  test_fail "Node.js nicht verfügbar"
-  show_debug "$NODE_VERSION"
-fi
-
-# Test: sudo Node.js
-SUDO_NODE_VERSION=$(sudo node -v 2>&1)
-if [[ $SUDO_NODE_VERSION =~ ^v[0-9]+ ]]; then
-  NODE_MAJOR=$(echo "$NODE_VERSION" | sed 's/v\([0-9]*\).*/\1/')
-  SUDO_MAJOR=$(echo "$SUDO_NODE_VERSION" | sed 's/v\([0-9]*\).*/\1/')
-  
-  if [ "$NODE_MAJOR" = "$SUDO_MAJOR" ]; then
-    test_pass "sudo Node.js Version stimmt überein: $SUDO_NODE_VERSION"
+  # Test: Node.js verfügbar
+  NODE_VERSION=$(node -v 2>&1)
+  if [[ $NODE_VERSION =~ ^v[0-9]+ ]]; then
+	test_pass "Node.js verfügbar: $NODE_VERSION"
   else
-    test_fail "sudo Node.js Version unterschiedlich: User=$NODE_VERSION, sudo=$SUDO_NODE_VERSION"
-    show_debug "User node: $(which node)\nsudo node: $(sudo which node)"
+	test_fail "Node.js nicht verfügbar"
+	show_debug "$NODE_VERSION"
+  fi
+
+  # Test: sudo Node.js
+  SUDO_NODE_VERSION=$(sudo node -v 2>&1)
+  if [[ $SUDO_NODE_VERSION =~ ^v[0-9]+ ]]; then
+	NODE_MAJOR=$(echo "$NODE_VERSION" | sed 's/v\([0-9]*\).*/\1/')
+	SUDO_MAJOR=$(echo "$SUDO_NODE_VERSION" | sed 's/v\([0-9]*\).*/\1/')
+
+	if [ "$NODE_MAJOR" = "$SUDO_MAJOR" ]; then
+      test_pass "sudo Node.js Version stimmt überein: $SUDO_NODE_VERSION"
+	else
+      test_fail "sudo Node.js Version unterschiedlich: User=$NODE_VERSION, sudo=$SUDO_NODE_VERSION"
+      show_debug "User node: $(which node)\nsudo node: $(sudo which node)"
+	fi
+  else
+    test_fail "sudo Node.js nicht verfügbar"
+    show_debug "$SUDO_NODE_VERSION"
   fi
 else
-  test_fail "sudo Node.js nicht verfügbar"
-  show_debug "$SUDO_NODE_VERSION"
+  echo -e "${YELLOW}Node.js-Tests übersprungen.${NC}"
 fi
 
 # ------------------------------------------------------------
