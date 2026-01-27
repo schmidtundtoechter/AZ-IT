@@ -16,7 +16,8 @@ def get_system_info():
 
 
 @frappe.whitelist(allow_guest=True)
-def run_diagnostics(run_node_tests=True):
+def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests=True, 
+                    run_node_tests=True, run_wkhtml_tests=True):
     """Run system diagnostics tests"""
     
     results = {
@@ -26,30 +27,33 @@ def run_diagnostics(run_node_tests=True):
     }
     
     # Kategorie 1: Netzwerk & DNS
-    network_tests = []
-    network_tests.append(test_ping('GitHub erreichbar', 'github.com'))
-    network_tests.append(test_ping('erptest.az-it.systems erreichbar', 'erptest.az-it.systems'))
-    network_tests.append(test_ping('deb.nodesource.com erreichbar', 'deb.nodesource.com'))
-    network_tests.append(test_https('deb.nodesource.com HTTPS Verbindung', 'https://deb.nodesource.com'))
-    network_tests.append(test_dns('DNS-Auflösung für erptest.az-it.systems', 'erptest.az-it.systems', '10.0.2.126'))
-    
-    results['categories']['1) Netzwerk & DNS Tests'] = {'tests': network_tests}
+    if run_network_tests:
+        network_tests = []
+        network_tests.append(test_ping('GitHub erreichbar', 'github.com'))
+        network_tests.append(test_ping('erptest.az-it.systems erreichbar', 'erptest.az-it.systems'))
+        network_tests.append(test_ping('deb.nodesource.com erreichbar', 'deb.nodesource.com'))
+        network_tests.append(test_https('deb.nodesource.com HTTPS Verbindung', 'https://deb.nodesource.com'))
+        network_tests.append(test_dns('DNS-Auflösung für erptest.az-it.systems', 'erptest.az-it.systems', '10.0.2.126'))
+        
+        results['categories']['1) Netzwerk & DNS Tests'] = {'tests': network_tests}
     
     # Kategorie 2: HTTPS / TLS
-    https_tests = []
-    https_tests.append(test_https('GitHub HTTPS Verbindung', 'https://github.com'))
-    https_tests.append(test_https('erptest.az-it.systems HTTPS Verbindung', 'https://erptest.az-it.systems'))
-    https_tests.append(test_https('fonts.googleapis.com HTTPS Verbindung', 'https://fonts.googleapis.com'))
-    https_tests.append(test_https('fonts.gstatic.com HTTPS Verbindung', 'https://fonts.gstatic.com'))
-    https_tests.append(test_https('www.google.com HTTPS Verbindung (Vergleichstest)', 'https://www.google.com'))
-    
-    results['categories']['2) HTTPS / TLS Tests'] = {'tests': https_tests}
+    if run_https_tests:
+        https_tests = []
+        https_tests.append(test_https('GitHub HTTPS Verbindung', 'https://github.com'))
+        https_tests.append(test_https('erptest.az-it.systems HTTPS Verbindung', 'https://erptest.az-it.systems'))
+        https_tests.append(test_https('fonts.googleapis.com HTTPS Verbindung', 'https://fonts.googleapis.com'))
+        https_tests.append(test_https('fonts.gstatic.com HTTPS Verbindung', 'https://fonts.gstatic.com'))
+        https_tests.append(test_https('www.google.com HTTPS Verbindung (Vergleichstest)', 'https://www.google.com'))
+        
+        results['categories']['2) HTTPS / TLS Tests'] = {'tests': https_tests}
     
     # Kategorie 3: Zertifikat Details
-    cert_tests = []
-    cert_tests.append(test_ssl_cert('SSL-Zertifikat mit korrektem SAN', 'erptest.az-it.systems'))
-    
-    results['categories']['3) Zertifikat Details'] = {'tests': cert_tests}
+    if run_cert_tests:
+        cert_tests = []
+        cert_tests.append(test_ssl_cert('SSL-Zertifikat mit korrektem SAN', 'erptest.az-it.systems'))
+        
+        results['categories']['3) Zertifikat Details'] = {'tests': cert_tests}
     
     # Kategorie 4: Node.js (optional)
     if run_node_tests:
@@ -59,11 +63,12 @@ def run_diagnostics(run_node_tests=True):
         results['categories']['4) Node.js Umgebung'] = {'tests': node_tests}
     
     # Kategorie 5: wkhtmltopdf
-    wkhtml_tests = []
-    wkhtml_tests.append(test_wkhtmltopdf_version('wkhtmltopdf verfügbar'))
-    wkhtml_tests.append(test_wkhtmltopdf_https('wkhtmltopdf kann HTTPS-Seite zu PDF konvertieren'))
+    if run_wkhtml_tests:
+        wkhtml_tests = []
+        wkhtml_tests.append(test_wkhtmltopdf_version('wkhtmltopdf verfügbar'))
+        wkhtml_tests.append(test_wkhtmltopdf_https('wkhtmltopdf kann HTTPS-Seite zu PDF konvertieren'))
     
-    results['categories']['5) wkhtmltopdf'] = {'tests': wkhtml_tests}
+        results['categories']['5) wkhtmltopdf'] = {'tests': wkhtml_tests}
     
     # Zusammenfassung berechnen
     for category in results['categories'].values():

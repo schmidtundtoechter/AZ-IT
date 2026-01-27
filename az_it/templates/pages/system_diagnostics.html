@@ -27,11 +27,44 @@
             </div>
 
             <div class="mb-4">
+                <h5 class="mb-3">Test-Kategorien auswählen:</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="runNetworkTests" checked>
+                    <label class="form-check-label" for="runNetworkTests">
+                        <i class="fa fa-network-wired"></i> Netzwerk & DNS Tests
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="runHttpsTests" checked>
+                    <label class="form-check-label" for="runHttpsTests">
+                        <i class="fa fa-lock"></i> HTTPS / TLS Tests
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="runCertTests" checked>
+                    <label class="form-check-label" for="runCertTests">
+                        <i class="fa fa-certificate"></i> Zertifikat Details
+                    </label>
+                </div>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="runNodeTests" checked>
                     <label class="form-check-label" for="runNodeTests">
-                        Node.js Tests durchführen
+                        <i class="fa fa-node-js"></i> Node.js Tests
                     </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="runWkhtmlTests" checked>
+                    <label class="form-check-label" for="runWkhtmlTests">
+                        <i class="fa fa-file-pdf"></i> wkhtmltopdf Tests
+                    </label>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-primary" onclick="$('.form-check-input').prop('checked', true); return false;">
+                        Alle auswählen
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="$('.form-check-input').prop('checked', false); return false;">
+                        Alle abwählen
+                    </button>
                 </div>
             </div>
 
@@ -217,7 +250,11 @@
 
         // Diagnose-Button Handler
         $('#runDiagnostics').click(function() {
+            const runNetworkTests = $('#runNetworkTests').is(':checked');
+            const runHttpsTests = $('#runHttpsTests').is(':checked');
+            const runCertTests = $('#runCertTests').is(':checked');
             const runNodeTests = $('#runNodeTests').is(':checked');
+            const runWkhtmlTests = $('#runWkhtmlTests').is(':checked');
             
             // UI zurücksetzen
             $('#resultsContainer').hide();
@@ -229,7 +266,11 @@
             frappe.call({
                 method: "az_it.az_it.page.system_diagnostics.system_diagnostics.run_diagnostics",
                 args: {
-                    run_node_tests: runNodeTests
+                    run_network_tests: runNetworkTests,
+                    run_https_tests: runHttpsTests,
+                    run_cert_tests: runCertTests,
+                    run_node_tests: runNodeTests,
+                    run_wkhtml_tests: runWkhtmlTests
                 },
                 callback: function(r) {
                     $('#loadingIndicator').hide();
