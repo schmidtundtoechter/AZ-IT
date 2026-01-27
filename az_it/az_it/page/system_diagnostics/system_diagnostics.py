@@ -55,7 +55,6 @@ def run_diagnostics(run_node_tests=True):
     if run_node_tests:
         node_tests = []
         node_tests.append(test_node_version('Node.js verfügbar'))
-        node_tests.append(test_sudo_node_version('sudo Node.js'))
         
         results['categories']['4) Node.js Umgebung'] = {'tests': node_tests}
     
@@ -146,27 +145,6 @@ def test_node_version(name):
     
     if passed:
         name += f': {stdout.strip()}'
-    
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_sudo_node_version(name):
-    """Test sudo Node.js version"""
-    returncode, stdout, stderr = run_command('node -v')
-    returncode_sudo, stdout_sudo, stderr_sudo = run_command('sudo node -v')
-    
-    passed = returncode_sudo == 0 and stdout_sudo.strip().startswith('v')
-    
-    if passed:
-        # Check if versions match
-        if stdout.strip() != stdout_sudo.strip():
-            passed = False
-            debug = f"User node: {stdout.strip()}\nsudo node: {stdout_sudo.strip()}\nVersionen unterscheiden sich!"
-        else:
-            debug = ''
-            name += f': {stdout_sudo.strip()} (stimmt überein)'
-    else:
-        debug = stderr_sudo
     
     return {'name': name, 'passed': passed, 'debug': debug}
 
