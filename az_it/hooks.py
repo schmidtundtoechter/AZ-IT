@@ -142,13 +142,11 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "Communication": {
+        "validate": "az_it.az_it.python_scripts.overrides.sales_invoice_email.set_invoice_email_sender"
+    }
+}
 
 # Scheduled Tasks
 # ---------------
