@@ -145,6 +145,9 @@ doctype_js = {
 doc_events = {
     "Communication": {
         "validate": "az_it.az_it.python_scripts.overrides.sales_invoice_email.set_invoice_email_sender"
+    },
+    "Item": {
+        "validate": "az_it.az_it.python_scripts.overrides.item_description.prepend_item_name_to_description"
     }
 }
 
