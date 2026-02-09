@@ -187,6 +187,7 @@ override_whitelisted_methods = {
     "erpnext.crm.doctype.lead.lead.make_opportunity": "az_it.az_it.python_scripts.overrides.lead.make_opportunity",
     "erpnext.accounts.party.get_party_details": "az_it.az_it.python_scripts.overrides.sales_invoice.get_party_details_with_billing"
 }
+
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

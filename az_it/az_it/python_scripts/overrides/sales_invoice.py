@@ -14,6 +14,7 @@ the customer's invoice/billing email address should be used, not the primary con
 import frappe
 
 
+
 @frappe.whitelist()
 def get_party_details_with_billing(
     party=None,

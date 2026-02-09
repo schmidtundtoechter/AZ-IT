@@ -22,6 +22,7 @@ frappe.ui.form.on('Sales Invoice', {
         });
     },
 
+    
     customer: function(frm) {
         // Clear WA Nummer when customer changes
         if (frm.doc.custom_wa_nummer) {
