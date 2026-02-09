@@ -15,6 +15,62 @@ import frappe
 
 
 @frappe.whitelist()
+def get_party_details_with_billing(
+    party=None,
+    party_type="Customer",
+    doctype=None,
+    **kwargs
+):
+    """
+    Override of erpnext.accounts.party.get_party_details
+
+    Replaces primary contact with billing contact for selling documents
+    (Sales Invoice, Sales Order, Quotation, Delivery Note).
+
+    For all other cases, uses standard ERPNext behavior.
+
+    Args:
+        party: Customer/Supplier name
+        party_type: "Customer" or "Supplier"
+        doctype: Document type (e.g., "Sales Invoice")
+        **kwargs: All other parameters passed to original function
+
+    Returns:
+        Dictionary with party details including contact information
+    """
+    # Import and call original ERPNext function
+    from erpnext.accounts.party import get_party_details as original_get_party_details
+
+    # Call original function with all parameters
+    party_details = original_get_party_details(
+        party=party,
+        party_type=party_type,
+        doctype=doctype,
+        **kwargs
+    )
+
+    # Only modify for Customer selling documents
+    if party_type == "Customer" and doctype in ["Sales Invoice", "Sales Order", "Quotation", "Delivery Note"]:
+        # Get billing contact for this customer
+        billing_contact_name = get_billing_contact_for_customer(party)
+
+        if billing_contact_name:
+            # Fetch billing contact details
+            billing_details = get_contact_details(billing_contact_name)
+
+            if billing_details:
+                # Replace contact fields in party_details
+                party_details.update({
+                    "contact_person": billing_details.get("contact_person"),
+                    "contact_display": billing_details.get("contact_display"),
+                    "contact_email": billing_details.get("contact_email"),
+                    "contact_mobile": billing_details.get("contact_mobile"),
+                })
+
+    return party_details
+
+
+@frappe.whitelist()
 def get_billing_contact(customer):
     """
     API method to get the billing contact for a customer.

@@ -56,24 +56,6 @@ frappe.ui.form.on('Sales Invoice', {
                 };
             }
         });
-
-        // Set billing contact instead of primary contact
-        if (frm.doc.customer) {
-            frappe.call({
-                method: 'az_it.az_it.python_scripts.overrides.sales_invoice.get_billing_contact',
-                args: {
-                    customer: frm.doc.customer
-                },
-                callback: function(r) {
-                    if (r.message) {
-                        frm.set_value('contact_person', r.message.contact_person);
-                        frm.set_value('contact_display', r.message.contact_display);
-                        frm.set_value('contact_email', r.message.contact_email);
-                        frm.set_value('contact_mobile', r.message.contact_mobile);
-                    }
-                }
-            });
-        }
     },
 
     custom_wa_nummer: function(frm) {

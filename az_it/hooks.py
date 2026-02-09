@@ -184,7 +184,8 @@ doc_events = {
 # 	"frappe.desk.doctype.event.event.get_events": "az_it.event.get_events"
 # }
 override_whitelisted_methods = {
-    "erpnext.crm.doctype.lead.lead.make_opportunity": "az_it.az_it.python_scripts.overrides.lead.make_opportunity"
+    "erpnext.crm.doctype.lead.lead.make_opportunity": "az_it.az_it.python_scripts.overrides.lead.make_opportunity",
+    "erpnext.accounts.party.get_party_details": "az_it.az_it.python_scripts.overrides.sales_invoice.get_party_details_with_billing"
 }
 #
 # each overriding function accepts a `data` argument;
