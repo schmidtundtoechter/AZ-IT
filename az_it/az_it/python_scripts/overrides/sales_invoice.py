@@ -42,6 +42,10 @@ def get_party_details_with_billing(
     # Import and call original ERPNext function
     from erpnext.accounts.party import get_party_details as original_get_party_details
 
+    # Remove 'cmd' from kwargs as it's added by Frappe's whitelist decorator
+    # but the original function doesn't accept it
+    kwargs.pop('cmd', None)
+
     # Call original function with all parameters
     party_details = original_get_party_details(
         party=party,
