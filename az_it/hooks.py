@@ -47,7 +47,8 @@ doctype_js = {
     "Lead": "az_it/js_scripts/lead.js",
     "Customer": "az_it/js_scripts/customer.js",
     "Sales Invoice": "az_it/js_scripts/sales_invoice.js",
-    "Sales Order": "az_it/js_scripts/sales_order.js"
+    "Sales Order": "az_it/js_scripts/sales_order.js",
+    "Quotation": "az_it/js_scripts/quotation.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -148,6 +149,12 @@ doc_events = {
     },
     "Item": {
         "validate": "az_it.az_it.python_scripts.overrides.item_description.prepend_item_name_to_description"
+    },
+    "Sales Order": {
+        "validate": "az_it.az_it.python_scripts.overrides.sales_order.validate_preisanpassung"
+    },
+    "Quotation": {
+        "validate": "az_it.az_it.python_scripts.overrides.quotation.validate_preisanpassung"
     }
 }
 
@@ -277,13 +284,13 @@ fixtures = [
     {
         "doctype": "Custom Field",
         "filters": [
-            ["dt", "=", "Delivery Note"]
+            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation"]]
         ]
     },
     {
         "doctype": "Property Setter",
         "filters": [
-            ["doc_type", "=", "Delivery Note"]
+            ["doc_type", "in", ["Delivery Note", "Sales Order", "Quotation"]]
         ]
     },
 ]

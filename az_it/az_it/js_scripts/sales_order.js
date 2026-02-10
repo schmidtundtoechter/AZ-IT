@@ -2,6 +2,19 @@
 // Copyright (c) 2025, ahmad mohammad and contributors
 
 frappe.ui.form.on('Sales Order', {
+    before_save: function(frm) {
+        // Validate price adjustment checkbox before saving
+        if (frm.doc.preisanpassung_erfolgt_sa !== 1) {
+            frappe.msgprint({
+                title: __('Preisanpassung erforderlich'),
+                indicator: 'red',
+                message: __('Bitte bestätigen Sie, dass die Preisanpassung erfolgt ist, indem Sie das Kontrollkästchen "Preisanpassung erfolgt" aktivieren.')
+            });
+            frappe.validated = false;
+            return false;
+        }
+    },
+
     refresh: function(frm) {
         // Set query filter for WA Nummer based on customer
         frm.set_query('custom_wa_nummer', function() {

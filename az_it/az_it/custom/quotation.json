@@ -1,0 +1,21 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Quotation",
+   "fieldname": "preisanpassung_erfolgt_qu",
+   "fieldtype": "Check",
+   "label": "Preisanpassung erfolgt",
+   "insert_after": "items",
+   "reqd": 1,
+   "default": "0",
+   "allow_on_submit": 0,
+   "in_list_view": 0,
+   "description": "Bestätigung, dass alle importierten Preise überprüft und angepasst wurden"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Quotation",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}
