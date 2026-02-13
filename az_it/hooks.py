@@ -151,10 +151,19 @@ doc_events = {
         "validate": "az_it.az_it.python_scripts.overrides.item_description.prepend_item_name_to_description"
     },
     "Sales Order": {
-        "validate": "az_it.az_it.python_scripts.overrides.sales_order.validate_preisanpassung"
+        "validate": [
+            "az_it.az_it.python_scripts.overrides.sales_order.validate_preisanpassung",
+            "az_it.az_it.python_scripts.overrides.sales_order_discount.validate_custom_discount"
+        ]
     },
     "Quotation": {
-        "validate": "az_it.az_it.python_scripts.overrides.quotation.validate_preisanpassung"
+        "validate": [
+            "az_it.az_it.python_scripts.overrides.quotation.validate_preisanpassung",
+            "az_it.az_it.python_scripts.overrides.quotation_discount.validate_custom_discount"
+        ]
+    },
+    "Sales Invoice": {
+        "validate": "az_it.az_it.python_scripts.overrides.sales_invoice_discount.validate_custom_discount"
     }
 }
 
@@ -284,7 +293,7 @@ fixtures = [
     {
         "doctype": "Custom Field",
         "filters": [
-            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation"]]
+            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice", "Quotation Item", "Sales Order Item", "Sales Invoice Item"]]
         ]
     },
     {
