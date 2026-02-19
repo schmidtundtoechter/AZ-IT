@@ -163,7 +163,10 @@ doc_events = {
         ]
     },
     "Sales Invoice": {
-        "validate": "az_it.az_it.python_scripts.overrides.sales_invoice_discount.validate_custom_discount"
+        "validate": [
+            "az_it.az_it.python_scripts.overrides.sales_invoice_discount.validate_custom_discount",
+            "az_it.az_it.python_scripts.overrides.sales_invoice_auftrag.auto_fill_auftrag_from_items"
+        ]
     }
 }
 
@@ -299,7 +302,7 @@ fixtures = [
     {
         "doctype": "Property Setter",
         "filters": [
-            ["doc_type", "in", ["Delivery Note", "Sales Order", "Quotation"]]
+            ["doc_type", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice"]]
         ]
     },
 ]
