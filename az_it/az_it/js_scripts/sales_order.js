@@ -171,7 +171,41 @@ function update_discount_description_sales_order(frm, cdt, cdn, discount_percent
     // Add new discount line if discount > 0
     if (discount_percent > 0) {
         let discount_html = `<p style="color: red; font-weight: bold;">inklusive ${discount_percent}% Rabatt</p>`;
-        description = description + '\n' + discount_html;
+
+        // Insert after first line/paragraph instead of appending at end
+        let insertPosition = -1;
+
+        // Pattern 1: Look for first </strong> or </b> tag (bold item name)
+        let strongMatch = description.match(/(<\/strong>|<\/b>)/i);
+        if (strongMatch) {
+            insertPosition = strongMatch.index + strongMatch[0].length;
+        }
+
+        // Pattern 2: Look for first </p> tag
+        if (insertPosition === -1) {
+            let pMatch = description.match(/<\/p>/i);
+            if (pMatch) {
+                insertPosition = pMatch.index + pMatch[0].length;
+            }
+        }
+
+        // Pattern 3: Look for first newline
+        if (insertPosition === -1) {
+            let newlineMatch = description.match(/\n/);
+            if (newlineMatch) {
+                insertPosition = newlineMatch.index + 1;
+            }
+        }
+
+        // If we found a position, insert there; otherwise append at end (fallback)
+        if (insertPosition > 0) {
+            description = description.substring(0, insertPosition) +
+                         '\n' + discount_html + '\n' +
+                         description.substring(insertPosition);
+        } else {
+            // Fallback: append at end
+            description = description + '\n' + discount_html;
+        }
     }
 
     frappe.model.set_value(cdt, cdn, 'description', description);
