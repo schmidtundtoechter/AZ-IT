@@ -510,5 +510,35 @@
   "property_type": "Check",
   "row_name": null,
   "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "warranty_period",
+  "is_system_generated": 0,
+  "module": null,
+  "name": "Item-warranty_period-description",
+  "property": "description",
+  "property_type": "Text",
+  "row_name": null,
+  "value": "1 Jahr = 365, 2 Jahre = 730, 3 Jahre = 1095, 5 Jahr = 1825"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "warranty_period",
+  "is_system_generated": 0,
+  "module": null,
+  "name": "Item-warranty_period-mandatory_depends_on",
+  "property": "mandatory_depends_on",
+  "property_type": "Code",
+  "row_name": null,
+  "value": "eval:doc.is_stock_item == 1"
  }
 ]

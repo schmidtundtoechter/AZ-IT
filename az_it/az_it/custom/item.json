@@ -1,0 +1,25 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Item",
+ "links": [],
+ "property_setters": [
+  {
+   "doctype_or_field": "DocField",
+   "doc_type": "Item",
+   "field_name": "warranty_period",
+   "property": "description",
+   "property_type": "Text",
+   "value": "1 Jahr = 365, 2 Jahre = 730, 3 Jahre = 1095, 5 Jahr = 1825"
+  },
+  {
+   "doctype_or_field": "DocField",
+   "doc_type": "Item",
+   "field_name": "warranty_period",
+   "property": "mandatory_depends_on",
+   "property_type": "Code",
+   "value": "eval:doc.is_stock_item == 1"
+  }
+ ],
+ "sync_on_migrate": 1
+}

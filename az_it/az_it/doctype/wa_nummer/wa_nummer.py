@@ -16,6 +16,12 @@ class WANummer(Document):
 		if not self.vertragsabschluss:
 			self.vertragsabschluss = frappe.utils.today()
 
+		# Keep price fields as blank (None) if not explicitly provided
+		if not self.aktueller_preis:
+			self.aktueller_preis = None
+		if not self.alter_preis:
+			self.alter_preis = None
+
 	def generate_wa_nummer(self):
 		"""
 		Generate a unique WA Nummer in the format WAXXXXX
@@ -36,13 +42,14 @@ class WANummer(Document):
 			try:
 				# Remove 'WA' prefix and convert to integer
 				numeric_part = int(last_number.replace('WA', ''))
-				new_number = numeric_part + 1
+				# Never generate below 1200 for new auto-numbers
+				new_number = max(numeric_part + 1, 1200)
 			except (ValueError, AttributeError):
-				# If parsing fails, start from 1
-				new_number = 1
+				# If parsing fails, start from 1200
+				new_number = 1200
 		else:
-			# No existing numbers, start from 1
-			new_number = 1
+			# No existing numbers, start from 1200
+			new_number = 1200
 
 		# Format as WAXXXXX (5 digits, zero-padded)
 		wa_nummer = f"WA{new_number:05d}"

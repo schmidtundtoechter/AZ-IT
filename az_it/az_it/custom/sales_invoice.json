@@ -2,6 +2,16 @@
  "custom_fields": [
   {
    "dt": "Sales Invoice",
+   "fieldname": "custom_referenz",
+   "fieldtype": "Data",
+   "label": "Referenz",
+   "insert_after": "due_date",
+   "fetch_from": "custom_wa_nummer.wa_nummer",
+   "fetch_if_empty": 1,
+   "translatable": 1
+  },
+  {
+   "dt": "Sales Invoice",
    "fieldname": "custom_wa_nummer",
    "fieldtype": "Link",
    "label": "WA Nummer",

@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "prompt",
+ "autoname": "field:wa_nummer",
  "creation": "2025-12-21 13:26:43.843270",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -13,6 +13,7 @@
   "column_break_1",
   "vertragsabschluss",
   "auftrag",
+  "deaktiviert",
   "section_break_2",
   "aktueller_preis",
   "alter_preis",
@@ -21,7 +22,7 @@
  ],
  "fields": [
   {
-   "description": "Support Contract Number - automatically generated",
+   "description": "Support-Vertragsnummer \u2013 automatisch generiert",
    "fieldname": "wa_nummer",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -30,7 +31,7 @@
    "unique": 1
   },
   {
-   "description": "Customer with support contract",
+   "description": "Kunde mit Supportvertrag",
    "fieldname": "kunde",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -40,35 +41,39 @@
    "reqd": 1
   },
   {
-   "description": "Linked item (type of maintenance contract)",
+   "description": "Verkn\u00fcpfter Artikel (Art des Wartungsvertrags)",
    "fieldname": "zugehoeriger_artikel",
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Zugeh\u00f6riger Artikel",
-   "options": "Item",
-   "reqd": 1
+   "options": "Item"
   },
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Contract conclusion date",
+   "description": "Vertragsabschlussdatum",
    "fieldname": "vertragsabschluss",
    "fieldtype": "Date",
-   "label": "Vertragsabschluss",
-   "reqd": 1
+   "label": "Vertragsabschluss"
   },
   {
-   "description": "Sales Order that generated this WA number",
+   "description": "Auftrag mit dieser WA Nummer",
    "fieldname": "auftrag",
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Auftrag",
-   "options": "Sales Order",
-   "reqd": 1
+   "options": "Sales Order"
+  },
+  {
+   "default": "0",
+   "fieldname": "deaktiviert",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Deaktiviert"
   },
   {
    "fieldname": "section_break_2",
@@ -76,13 +81,13 @@
    "label": "Pricing"
   },
   {
-   "description": "Current price - maintained manually",
+   "description": "Aktueller Preis \u2013 manuell gepflegt",
    "fieldname": "aktueller_preis",
    "fieldtype": "Currency",
    "label": "Aktueller Preis"
   },
   {
-   "description": "Old price - maintained manually",
+   "description": "Alter Preis \u2013 manuell gepflegt",
    "fieldname": "alter_preis",
    "fieldtype": "Currency",
    "label": "Alter Preis"
@@ -106,7 +111,7 @@
  "modified_by": "Administrator",
  "module": "Az It",
  "name": "WA Nummer",
- "naming_rule": "Set by user",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

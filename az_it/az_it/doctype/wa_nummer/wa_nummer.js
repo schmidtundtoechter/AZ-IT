@@ -5,7 +5,7 @@ frappe.ui.form.on("WA Nummer", {
 	refresh(frm) {
 		// Add helpful message for new records
 		if (frm.is_new()) {
-			frm.set_intro(__('WA Nummer will be automatically generated when you save this record.'), 'blue');
+			frm.set_intro(__('WA Nummer wird beim Speichern automatisch generiert (ab WA01200). Alternativ kann eine manuelle WA-Nummer eingetragen werden.'), 'blue');
 		}
 
 		// Add link to view all WA Numbers for this customer

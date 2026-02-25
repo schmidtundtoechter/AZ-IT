@@ -16,19 +16,21 @@ frappe.ui.form.on('Sales Order', {
     },
 
     refresh: function(frm) {
-        // Set query filter for WA Nummer based on customer
+        // Set query filter for WA Nummer based on customer (exclude deactivated)
         frm.set_query('custom_wa_nummer', function() {
             if (frm.doc.customer) {
                 return {
                     filters: {
-                        'kunde': frm.doc.customer
+                        'kunde': frm.doc.customer,
+                        'deaktiviert': 0
                     }
                 };
             } else {
                 frappe.msgprint(__('Please select a customer first'));
                 return {
                     filters: {
-                        'kunde': ['=', '']
+                        'kunde': ['=', ''],
+                        'deaktiviert': 0
                     }
                 };
             }
@@ -70,12 +72,13 @@ frappe.ui.form.on('Sales Order', {
             });
         }
 
-        // Set query filter again when customer changes
+        // Set query filter again when customer changes (exclude deactivated)
         frm.set_query('custom_wa_nummer', function() {
             if (frm.doc.customer) {
                 return {
                     filters: {
-                        'kunde': frm.doc.customer
+                        'kunde': frm.doc.customer,
+                        'deaktiviert': 0
                     }
                 };
             }
