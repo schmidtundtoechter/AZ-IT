@@ -163,3 +163,72 @@ def get_contact_details(contact_name):
     )
 
     return contact
+
+
+@frappe.whitelist()
+def get_billing_email_for_invoice(invoice_name):
+    """
+    Return the best billing email address for a given Sales Invoice.
+
+    Priority:
+    1. contact_person already on the invoice (set by billing contact override)
+    2. Any contact for the customer with is_billing_contact=1
+
+    Email selection within a contact:
+    - Prefer the email marked is_primary
+    - If none is_primary but only one email exists, use it
+    - If multiple emails without is_primary, use the first one
+
+    Args:
+        invoice_name: Name of the Sales Invoice doctype
+
+    Returns:
+        Email address string or None
+    """
+    contact_person, customer = frappe.db.get_value(
+        "Sales Invoice", invoice_name, ["contact_person", "customer"]
+    )
+
+    if not customer:
+        return None
+
+    # Step 1: try contact already linked on the invoice
+    if contact_person:
+        email = _get_best_email_from_contact(contact_person)
+        if email:
+            return email
+
+    # Step 2: fall back to searching for billing contact by customer
+    billing_contact = get_billing_contact_for_customer(customer)
+    if billing_contact:
+        return _get_best_email_from_contact(billing_contact)
+
+    return None
+
+
+def _get_best_email_from_contact(contact_name):
+    """
+    Return the best email from a contact's email_ids child table.
+
+    Prefers is_primary; falls back to first available.
+
+    Args:
+        contact_name: Name of the Contact doctype
+
+    Returns:
+        Email address string or None
+    """
+    try:
+        contact = frappe.get_doc("Contact", contact_name)
+    except frappe.DoesNotExistError:
+        return None
+
+    emails = contact.email_ids or []
+    if not emails:
+        return None
+
+    for e in emails:
+        if e.is_primary:
+            return e.email_id
+
+    return emails[0].email_id

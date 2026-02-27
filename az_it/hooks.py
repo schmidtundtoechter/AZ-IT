@@ -48,7 +48,8 @@ doctype_js = {
     "Customer": "az_it/js_scripts/customer.js",
     "Sales Invoice": "az_it/js_scripts/sales_invoice.js",
     "Sales Order": "az_it/js_scripts/sales_order.js",
-    "Quotation": "az_it/js_scripts/quotation.js"
+    "Quotation": "az_it/js_scripts/quotation.js",
+    "Auto Repeat": "az_it/js_scripts/auto_repeat.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
