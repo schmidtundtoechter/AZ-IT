@@ -40,9 +40,10 @@ def validate_custom_discount(doc, method=None):
         # Validate calculation if discount is applied
         if discount > 0:
             if not ausgangspreis:
-                # Auto-set ausgangspreis if missing
-                item.custom_ausgangspreis = item.rate
-                ausgangspreis = item.rate
+                # Reverse-calculate original price from already-discounted rate
+                # (rate on DN is already discounted when copied from SO)
+                item.custom_ausgangspreis = item.rate / (1 - discount / 100)
+                ausgangspreis = item.custom_ausgangspreis
 
             expected_rate = ausgangspreis * (1 - discount / 100)
             actual_rate = float(item.rate)
