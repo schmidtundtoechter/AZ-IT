@@ -54,6 +54,9 @@ def validate_custom_discount(doc, method=None):
                 item.description = add_discount_to_description(
                     item.description, discount
                 )
+
+            # Restore blank line after discount text if accidentally deleted
+            item.description = ensure_blank_line_after_discount(item.description)
         else:
             # If discount is 0, remove any discount text from description
             if item.description:
@@ -128,3 +131,22 @@ def remove_discount_from_description(description):
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
 
     return cleaned
+
+
+def ensure_blank_line_after_discount(description):
+    """Restore blank <p></p> after discount paragraph if accidentally deleted."""
+    if not description:
+        return description
+
+    match = re.search(
+        r'<p[^>]*style="[^"]*color:\s*red[^"]*"[^>]*>inklusive\s+\d+%\s+Rabatt</p>',
+        description, re.IGNORECASE
+    )
+    if not match:
+        return description
+
+    after = description[match.end():].lstrip('\n\r ')
+    if not re.match(r'<p>\s*(<br\s*/?>)?\s*</p>', after, re.IGNORECASE):
+        return description[:match.end()] + '<p></p>' + description[match.end():]
+
+    return description

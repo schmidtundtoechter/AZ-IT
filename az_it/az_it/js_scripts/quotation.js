@@ -127,7 +127,21 @@ function update_discount_description_quotation(frm, cdt, cdn, discount_percent) 
         }
     }
 
+    description = ensure_blank_line_after_discount_quotation(description);
     frappe.model.set_value(cdt, cdn, 'description', description);
+}
+
+// Helper function to ensure blank line follows discount paragraph
+function ensure_blank_line_after_discount_quotation(description) {
+    if (!description) return description;
+    let match = description.match(/<p[^>]*style="[^"]*color:\s*red[^"]*"[^>]*>inklusive\s+\d+%\s+Rabatt<\/p>/i);
+    if (!match) return description;
+    let endPos = match.index + match[0].length;
+    let after = description.substring(endPos).replace(/^[\n\r ]+/, '');
+    if (!/<p>\s*(<br\s*\/?>)?\s*<\/p>/i.test(after.match(/^<[^>]*>/)?.[0] || '')) {
+        return description.substring(0, endPos) + '<p></p>' + description.substring(endPos);
+    }
+    return description;
 }
 
 // Helper function to remove existing discount line from description
