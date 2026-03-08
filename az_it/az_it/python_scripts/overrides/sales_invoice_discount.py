@@ -84,10 +84,12 @@ def add_discount_to_description(description, discount_percent):
     discount_html = f'<p style="color: red; font-weight: bold;">inklusive {int(discount_percent)}% Rabatt</p>'
 
     # Insert after first line/paragraph instead of appending
-    # Pattern 1: Look for first </strong> or </b> tag (bold item name)
+    # Pattern 1: Look for first </strong> or </b> tag (bold item name),
+    # then advance to the closing </p> of that paragraph for valid HTML.
     strong_match = re.search(r'(</strong>|</b>)', description, re.IGNORECASE)
     if strong_match:
-        insert_pos = strong_match.end()
+        p_close = re.search(r'</p>', description[strong_match.end():], re.IGNORECASE)
+        insert_pos = strong_match.end() + p_close.end() if p_close else strong_match.end()
     else:
         # Pattern 2: Look for first </p> tag
         p_match = re.search(r'</p>', description, re.IGNORECASE)
@@ -100,10 +102,10 @@ def add_discount_to_description(description, discount_percent):
                 insert_pos = newline_match.end()
             else:
                 # Fallback: append at end
-                return description + '\n' + discount_html
+                return description + discount_html
 
-    # Insert at found position
-    return description[:insert_pos] + '\n' + discount_html + '\n' + description[insert_pos:]
+    # Insert at found position (no surrounding \n to avoid extra whitespace text nodes)
+    return description[:insert_pos] + discount_html + description[insert_pos:]
 
 
 def remove_discount_from_description(description):

@@ -94,10 +94,13 @@ function update_discount_description_quotation(frm, cdt, cdn, discount_percent) 
         // Insert after first line/paragraph instead of appending at end
         let insertPosition = -1;
 
-        // Pattern 1: Look for first </strong> or </b> tag (bold item name)
+        // Pattern 1: Look for first </strong> or </b> tag (bold item name),
+        // then advance to the closing </p> of that paragraph for valid HTML.
         let strongMatch = description.match(/(<\/strong>|<\/b>)/i);
         if (strongMatch) {
-            insertPosition = strongMatch.index + strongMatch[0].length;
+            let strongEnd = strongMatch.index + strongMatch[0].length;
+            let pClose = description.substring(strongEnd).match(/<\/p>/i);
+            insertPosition = pClose ? strongEnd + pClose.index + pClose[0].length : strongEnd;
         }
 
         // Pattern 2: Look for first </p> tag
@@ -117,13 +120,14 @@ function update_discount_description_quotation(frm, cdt, cdn, discount_percent) 
         }
 
         // If we found a position, insert there; otherwise append at end (fallback)
+        // No surrounding \n to avoid extra whitespace text nodes in the editor
         if (insertPosition > 0) {
             description = description.substring(0, insertPosition) +
-                         '\n' + discount_html + '\n' +
+                         discount_html +
                          description.substring(insertPosition);
         } else {
             // Fallback: append at end
-            description = description + '\n' + discount_html;
+            description = description + discount_html;
         }
     }
 
