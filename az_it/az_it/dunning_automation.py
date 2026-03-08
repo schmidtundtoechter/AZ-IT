@@ -74,6 +74,9 @@ def _process_invoice(invoice, dunning_types_by_level):
 	Level 2: triggered N days after the submitted Level 1 dunning's posting_date.
 	Level 3: triggered N days after the submitted Level 2 dunning's posting_date.
 	"""
+	if not invoice.due_date:
+		return  # skip invoices with no due date
+
 	today_date = getdate(today())
 
 	# --- Level 1 ---
