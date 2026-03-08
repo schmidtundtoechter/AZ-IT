@@ -177,23 +177,11 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"az_it.tasks.all"
-# 	],
-# 	"daily": [
-# 		"az_it.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"az_it.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"az_it.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"az_it.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"az_it.az_it.dunning_automation.auto_create_dunnings",
+	],
+}
 
 # Testing
 # -------
@@ -300,7 +288,7 @@ fixtures = [
     {
         "doctype": "Custom Field",
         "filters": [
-            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice", "Quotation Item", "Sales Order Item", "Sales Invoice Item", "Delivery Note Item"]]
+            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice", "Quotation Item", "Sales Order Item", "Sales Invoice Item", "Delivery Note Item", "Dunning Type"]]
         ]
     },
     {
