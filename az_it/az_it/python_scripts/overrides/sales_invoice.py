@@ -192,16 +192,16 @@ def get_billing_email_for_invoice(invoice_name):
     if not customer:
         return None
 
-    # Step 1: try contact already linked on the invoice
-    if contact_person:
-        email = _get_best_email_from_contact(contact_person)
+    # Step 1: prefer dedicated billing contact for the customer
+    billing_contact = get_billing_contact_for_customer(customer)
+    if billing_contact:
+        email = _get_best_email_from_contact(billing_contact)
         if email:
             return email
 
-    # Step 2: fall back to searching for billing contact by customer
-    billing_contact = get_billing_contact_for_customer(customer)
-    if billing_contact:
-        return _get_best_email_from_contact(billing_contact)
+    # Step 2: fall back to the contact already linked on the invoice
+    if contact_person:
+        return _get_best_email_from_contact(contact_person)
 
     return None
 
