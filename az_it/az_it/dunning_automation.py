@@ -82,7 +82,7 @@ def _process_invoice(invoice, dunning_types_by_level):
 	# --- Level 1 ---
 	l1 = dunning_types_by_level.get(1)
 	if l1:
-		trigger_date = getdate(add_days(invoice.due_date, l1.custom_days_trigger or 30))
+		trigger_date = getdate(add_days(invoice.due_date, l1.custom_days_trigger if l1.custom_days_trigger is not None else 30))
 		if today_date >= trigger_date:
 			if not _get_existing_dunning(invoice.name, 1):
 				_create_dunning_draft(invoice, l1)
@@ -93,7 +93,7 @@ def _process_invoice(invoice, dunning_types_by_level):
 	if l2:
 		submitted_l1 = _get_submitted_dunning(invoice.name, 1)
 		if submitted_l1:
-			trigger_date = getdate(add_days(submitted_l1.posting_date, l2.custom_days_trigger or 10))
+			trigger_date = getdate(add_days(submitted_l1.posting_date, l2.custom_days_trigger if l2.custom_days_trigger is not None else 10))
 			if today_date >= trigger_date:
 				if not _get_existing_dunning(invoice.name, 2):
 					_create_dunning_draft(invoice, l2)
@@ -104,7 +104,7 @@ def _process_invoice(invoice, dunning_types_by_level):
 	if l3:
 		submitted_l2 = _get_submitted_dunning(invoice.name, 2)
 		if submitted_l2:
-			trigger_date = getdate(add_days(submitted_l2.posting_date, l3.custom_days_trigger or 10))
+			trigger_date = getdate(add_days(submitted_l2.posting_date, l3.custom_days_trigger if l3.custom_days_trigger is not None else 10))
 			if today_date >= trigger_date:
 				if not _get_existing_dunning(invoice.name, 3):
 					_create_dunning_draft(invoice, l3)
