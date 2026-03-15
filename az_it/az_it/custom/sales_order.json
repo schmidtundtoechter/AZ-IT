@@ -2,6 +2,33 @@
  "custom_fields": [
   {
    "dt": "Sales Order",
+   "fieldname": "custom_zahlungsbedingung",
+   "fieldtype": "Link",
+   "label": "Zahlungsbedingung",
+   "insert_after": "payment_terms_template",
+   "options": "Payment Term",
+   "default": "NETTO - nach Rechnungserhalt netto"
+  },
+  {
+   "dt": "Sales Order",
+   "fieldname": "custom_bedingung_zahlung",
+   "fieldtype": "Data",
+   "label": "Zahlungsbedingungen",
+   "insert_after": "custom_referenz",
+   "fetch_from": "custom_zahlungsbedingung.description",
+   "fetch_if_empty": 1,
+   "default": "nach Rechnungserhalt netto",
+   "translatable": 1
+  },
+  {
+   "dt": "Sales Order",
+   "fieldname": "custom_auftragsdatum_des_kunden",
+   "fieldtype": "Date",
+   "label": "Auftragsdatum des Kunden",
+   "insert_after": "custom_bedingung_zahlung"
+  },
+  {
+   "dt": "Sales Order",
    "fieldname": "custom_wa_nummer",
    "fieldtype": "Link",
    "label": "WA Nummer",

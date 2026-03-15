@@ -1,5 +1,16 @@
 {
- "custom_fields": [],
+ "custom_fields": [
+  {
+   "dt": "Item",
+   "fieldname": "custom_externe_artikelnummer",
+   "fieldtype": "Data",
+   "label": "Externe Artikelnummer",
+   "insert_after": "item_group",
+   "length": 20,
+   "in_list_view": 1,
+   "translatable": 1
+  }
+ ],
  "custom_perms": [],
  "doctype": "Item",
  "links": [],

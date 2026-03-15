@@ -1,0 +1,27 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Contact",
+   "fieldname": "custom_pr\u00e4fix",
+   "fieldtype": "Data",
+   "label": "Titel",
+   "insert_after": "contact_section",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "in_preview": 1,
+   "translatable": 1
+  },
+  {
+   "dt": "Contact",
+   "fieldname": "is_billing_contact",
+   "fieldtype": "Check",
+   "label": "Is Billing Contact",
+   "insert_after": "is_primary_contact"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Contact",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

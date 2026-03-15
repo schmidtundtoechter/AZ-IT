@@ -2,6 +2,35 @@
  "custom_fields": [
   {
    "dt": "Customer",
+   "fieldname": "custom_interne_kundennummer",
+   "fieldtype": "Data",
+   "label": "Interne Kundennummer",
+   "insert_after": "customer_type",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "in_global_search": 1,
+   "translatable": 1
+  },
+  {
+   "dt": "Customer",
+   "fieldname": "custom_unsere_lieferantennr",
+   "fieldtype": "Data",
+   "label": "Unsere Lieferantennr.",
+   "insert_after": "custom_interne_kundennummer",
+   "translatable": 1,
+   "description": "Interne Lieferantennummer gegenüber Kunden von AZ"
+  },
+  {
+   "dt": "Customer",
+   "fieldname": "custom_anzahl_der_mitarbeiter",
+   "fieldtype": "Select",
+   "label": "Anzahl der Mitarbeiter",
+   "insert_after": "market_segment",
+   "options": "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+",
+   "translatable": 1
+  },
+  {
+   "dt": "Customer",
    "fieldname": "custom_wa_nummer_section",
    "fieldtype": "Section Break",
    "label": "WA Nummer (Support Contracts)",
