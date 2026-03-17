@@ -2,6 +2,26 @@
  "custom_fields": [
   {
    "dt": "Quotation",
+   "fieldname": "custom_zahlungsbedingung",
+   "fieldtype": "Link",
+   "label": "Zahlungsbedingung",
+   "insert_after": "custom_interne_kundennummer",
+   "options": "Payment Term",
+   "default": "NETTO - nach Rechnungserhalt netto"
+  },
+  {
+   "dt": "Quotation",
+   "fieldname": "custom_bedingung_zahlung",
+   "fieldtype": "Data",
+   "label": "Zahlungsbedingungen (Druckformat)",
+   "insert_after": "custom_zahlungsbedingung",
+   "fetch_from": "custom_zahlungsbedingung.description",
+   "fetch_if_empty": 1,
+   "default": "nach Rechnungserhalt netto",
+   "translatable": 1
+  },
+  {
+   "dt": "Quotation",
    "fieldname": "preisanpassung_erfolgt_qu",
    "fieldtype": "Check",
    "label": "Preisanpassung erfolgt",
