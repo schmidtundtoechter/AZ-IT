@@ -219,15 +219,17 @@ def test_wkhtmltopdf_version(name):
     returncode, stdout, stderr = run_command('wkhtmltopdf --version')
     passed = returncode == 0 and 'wkhtmltopdf' in (stdout + stderr)
     
+    REQUIRED_VERSION = '0.12.6.1 (with patched qt)'
     if passed:
-        if '0.12.6' in (stdout + stderr):
-            name += ': Version 0.12.6 (empfohlen)'
+        passed = REQUIRED_VERSION in (stdout + stderr)
+        if passed:
+            name += f': Version {REQUIRED_VERSION} (empfohlen)'
         else:
             # Extract version
             import re
-            version_match = re.search(r'(\d+\.\d+\.\d+)', stdout + stderr)
+            version_match = re.search(r'(\d+\.\d+[\d.]*(?: \(with patched qt\))?)', stdout + stderr)
             if version_match:
-                name += f': {version_match.group(1)}'
+                name += f': {version_match.group(1)} (nicht empfohlen, erwartet: {REQUIRED_VERSION})'
     
     debug = stderr if not passed else ''
     return {'name': name, 'passed': passed, 'debug': debug}
