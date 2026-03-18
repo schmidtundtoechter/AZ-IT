@@ -80,7 +80,7 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
     if run_wkhtml_tests:
         wkhtml_tests = []
         wkhtml_tests.append(test_wkhtmltopdf_version('wkhtmltopdf verfügbar'))
-        wkhtml_tests.append(test_wkhtmltopdf_https('wkhtmltopdf kann HTTPS-Seite zu PDF konvertieren'))
+        wkhtml_tests.append(test_wkhtmltopdf_https('wkhtmltopdf kann HTTPS-Seite zu PDF konvertieren', site_host))
     
         results['categories']['5) wkhtmltopdf'] = {'tests': wkhtml_tests}
     
@@ -252,21 +252,28 @@ def test_wkhtmltopdf_version(name):
     return {'name': name, 'passed': passed, 'debug': debug}
 
 
-def test_wkhtmltopdf_https(name):
-    """Test wkhtmltopdf HTTPS conversion"""
+def test_wkhtmltopdf_https(name, host):
+    """Test wkhtmltopdf HTTP/HTTPS conversion"""
     test_file = '/tmp/wkhtml_test.pdf'
-    
+
+    # Lokale Umgebung erkennen: .localhost-Domains und "localhost" verwenden HTTP
+    is_local = host.endswith('.localhost') or host == 'localhost'
+    scheme = 'http' if is_local else 'https'
+
+    # Testname an verwendetes Schema anpassen
+    name = name.replace('HTTPS', scheme.upper())
+
     # Clean up old test file
     if os.path.exists(test_file):
         os.remove(test_file)
-    
-    returncode, stdout, stderr = run_command(f'wkhtmltopdf https://erptest.az-it.systems {test_file}')
-    
+
+    returncode, stdout, stderr = run_command(f'wkhtmltopdf {scheme}://{host} {test_file}')
+
     passed = os.path.exists(test_file) and os.path.getsize(test_file) > 0
     debug = stdout + stderr if not passed else ''
-    
+
     # Clean up
     if os.path.exists(test_file):
         os.remove(test_file)
-    
+
     return {'name': name, 'passed': passed, 'debug': debug}
