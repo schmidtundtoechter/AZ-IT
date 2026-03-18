@@ -34,7 +34,10 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
     }
 
     # Aktuelle Site-Domain dynamisch ermitteln
-    site_host = frappe.local.site
+    try:
+        site_host = frappe.local.site or socket.gethostname()
+    except AttributeError:
+        site_host = socket.gethostname()
 
     # Kategorie 1: Netzwerk & DNS
     if run_network_tests:
@@ -111,6 +114,8 @@ def run_command(cmd, shell=True):
 
 def test_ping(name, host):
     """Test if a host is reachable via ping"""
+    if host.endswith('.localhost') or host == 'localhost':
+        return {'name': f'{name} → 127.0.0.1 (lokal)', 'passed': True, 'debug': ''}
     returncode, stdout, stderr = run_command(f'ping -c 1 -W 2 {host}')
     passed = returncode == 0
     debug = stdout + stderr if not passed else ''
@@ -119,6 +124,10 @@ def test_ping(name, host):
 
 def test_https(name, url):
     """Test HTTPS connection to a URL"""
+    from urllib.parse import urlparse
+    host = urlparse(url).hostname or ''
+    if host.endswith('.localhost') or host == 'localhost':
+        return {'name': f'{name} (übersprungen – lokale Dev-Domain)', 'passed': True, 'debug': ''}
     returncode, stdout, stderr = run_command(f'curl -sS -I {url}')
     passed = returncode == 0 and ('200' in stdout or '301' in stdout or '302' in stdout or '404' in stdout)
     
@@ -164,6 +173,10 @@ def test_dns(name, host):
                     own_ip = ip
                     break
     
+    # .localhost-Domains lösen sich per Definition zu 127.0.0.1 auf
+    if host.endswith('.localhost') or host == 'localhost':
+        return {'name': f'{name} → 127.0.0.1 (lokal)', 'passed': True, 'debug': ''}
+
     # DNS-Auflösung durchführen
     returncode, stdout, stderr = run_command(f'getent hosts {host}')
     
@@ -182,6 +195,8 @@ def test_dns(name, host):
 
 def test_ssl_cert(name, host):
     """Test SSL certificate SAN"""
+    if host.endswith('.localhost') or host == 'localhost':
+        return {'name': f'{name} (übersprungen – lokale Dev-Domain)', 'passed': True, 'debug': ''}
     cmd = f'echo | openssl s_client -connect {host}:443 -servername {host} 2>&1'
     returncode, stdout, stderr = run_command(cmd)
     
@@ -193,6 +208,8 @@ def test_ssl_cert(name, host):
 
 def test_ssl_validation(name, host):
     """Test SSL certificate validation"""
+    if host.endswith('.localhost') or host == 'localhost':
+        return {'name': f'{name} (übersprungen – lokale Dev-Domain)', 'passed': True, 'debug': ''}
     cmd = f'echo | openssl s_client -connect {host}:443 -servername {host} 2>&1'
     returncode, stdout, stderr = run_command(cmd)
     
