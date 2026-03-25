@@ -245,6 +245,37 @@ def download_backup_files(host: str, user: str, remote_files: list[str], local_d
 
 
 # ---------------------------------------------------------------------------
+# Backup-Rotation: alte Sets löschen
+# ---------------------------------------------------------------------------
+
+def cleanup_old_backups(local_dir: Path, keep: int = 3) -> None:
+    """
+    Löscht alte Backup-Sets in local_dir und behält nur die neuesten `keep` Sets.
+    Ein Set = alle Dateien mit gleichem Zeitstempel-Prefix (erste 15 Zeichen).
+    """
+    if not local_dir.exists():
+        return
+
+    # Alle Zeitstempel-Prefixes ermitteln (z.B. "20260318_160131")
+    timestamps: set[str] = set()
+    for f in local_dir.iterdir():
+        if f.is_file() and len(f.name) >= 15:
+            timestamps.add(f.name[:15])
+
+    sorted_ts = sorted(timestamps)
+    to_delete = sorted_ts[:-keep] if len(sorted_ts) > keep else []
+
+    if not to_delete:
+        return
+
+    print(f"\n      Bereinige alte Backups (behalte {keep} neueste Sets) ...")
+    for ts in to_delete:
+        for f in local_dir.glob(f"{ts}*"):
+            f.unlink()
+            print(f"      🗑  {f.name} gelöscht")
+
+
+# ---------------------------------------------------------------------------
 # Schritt 5: Backup lokal einspielen
 # ---------------------------------------------------------------------------
 
@@ -637,6 +668,9 @@ def main():
         if not downloaded:
             print("\nAbbruch: Keine Backup-Dateien heruntergeladen.")
             sys.exit(1)
+
+        # Alte Backup-Sets bereinigen (die letzten 3 behalten)
+        cleanup_old_backups(local_dir, keep=3)
 
     # Schritt 6: Backup lokal einspielen (optional überspringen)
     if not args.skip_restore:
