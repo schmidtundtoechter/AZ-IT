@@ -341,7 +341,18 @@ def restore_backup_locally(downloaded: list[Path], bench_dir: Path, site: str) -
 
     print("      ✓ Datenbank erfolgreich eingespielt")
 
-    # Site-Konfiguration: lokale Werte setzen und sichere Keys aus Remote-Config übernehmen
+    # /etc/hosts-Einträge sicherstellen (wkhtmltopdf braucht DNS-Auflösung für lokale Sites)
+    _ensure_hosts_entry(site)
+
+    # Migrate ausführen
+    print("      → Führe bench migrate aus ...")
+    rc = run_local_stream([bench_bin, "--site", site, "migrate"])
+    if rc == 0:
+        print("      \u2713 Migration erfolgreich")
+    else:
+        print("      \u26a0 Migration mit Fehlern abgeschlossen (siehe Ausgabe oben).")
+
+    # Site-Konfiguration NACH migrate setzen – migrate überschreibt die Config sonst
     local_config = bench_dir / "sites" / site / "site_config.json"
     try:
         if local_config.exists():
@@ -350,8 +361,8 @@ def restore_backup_locally(downloaded: list[Path], bench_dir: Path, site: str) -
         else:
             local_cfg = {}
 
-        # Lokalen host_name immer setzen (wird durch restore überschrieben)
-        local_cfg["host_name"] = "http://localhost:8000"
+        # Lokalen host_name immer setzen (wird durch restore/migrate überschrieben)
+        local_cfg["host_name"] = f"http://{site}:8000"
 
         # Sichere Keys aus Remote-Config übernehmen
         if config_file:
@@ -366,20 +377,9 @@ def restore_backup_locally(downloaded: list[Path], bench_dir: Path, site: str) -
 
         with open(local_config, "w") as f:
             json.dump(local_cfg, f, indent=1)
-        print(f"      ✓ Site-Konfiguration gesetzt (host_name: http://localhost:8000)")
+        print(f"      ✓ Site-Konfiguration gesetzt (host_name: http://{site}:8000)")
     except Exception as e:
         print(f"      ⚠ Site-Konfiguration konnte nicht gesetzt werden: {e}")
-
-    # /etc/hosts-Einträge sicherstellen (wkhtmltopdf braucht DNS-Auflösung für lokale Sites)
-    _ensure_hosts_entry(site)
-
-    # Migrate ausführen
-    print("      → Führe bench migrate aus ...")
-    rc = run_local_stream([bench_bin, "--site", site, "migrate"])
-    if rc == 0:
-        print("      \u2713 Migration erfolgreich")
-    else:
-        print("      \u26a0 Migration mit Fehlern abgeschlossen (siehe Ausgabe oben).")
 
     return True
 
