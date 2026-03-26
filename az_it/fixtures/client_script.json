@@ -2,6 +2,50 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Quotation",
+  "enabled": 1,
+  "modified": "2026-03-11 10:10:36.829901",
+  "module": "Az It",
+  "name": "Angebot - Kundennummer ziehen",
+  "script": "frappe.ui.form.on('Quotation', {\r\n    party_name: function(frm) {\r\n        if (frm.doc.quotation_to && frm.doc.party_name) {\r\n            frappe.db.get_value(frm.doc.quotation_to, frm.doc.party_name, 'custom_interne_kundennummer')\r\n                .then(r => {\r\n                    if (r && r.message) {\r\n                        frm.set_value('custom_interne_kundennummer', r.message.custom_interne_kundennummer);\r\n                    }\r\n                });\r\n        } else {\r\n            frm.set_value('custom_interne_kundennummer', '(unbekannt)');\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Opportunity",
+  "enabled": 1,
+  "modified": "2025-01-16 11:23:32.804239",
+  "module": "Az It",
+  "name": "Chance - Button legt Firmenname in die Zwischenablage",
+  "script": "frappe.ui.form.on('Opportunity', {\r\n    refresh: function(frm) {\r\n        frm.add_custom_button(__('Copy Customer Name'), function() {\r\n            if (frm.doc.customer_name) {\r\n                // Text in die Zwischenablage kopieren\r\n                navigator.clipboard.writeText(frm.doc.customer_name)\r\n                    .then(() => {\r\n                        frappe.show_alert({\r\n                            message: __('Customer Name copied to clipboard: {0}', [frm.doc.customer_name]),\r\n                            indicator: 'green'\r\n                        });\r\n                    })\r\n                    .catch(err => {\r\n                        frappe.msgprint({\r\n                            title: __('Error'),\r\n                            message: __('Failed to copy Customer Name to clipboard.'),\r\n                            indicator: 'red'\r\n                        });\r\n                        console.error('Clipboard write failed', err);\r\n                    });\r\n            } else {\r\n                frappe.msgprint(__('No Customer Name to copy.'));\r\n            }\r\n        }, __(\"Aktionen\")); // Optional: Button-Gruppe, in der der Button angezeigt wird\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Opportunity",
+  "enabled": 1,
+  "modified": "2026-03-24 11:06:05.519558",
+  "module": "Az It",
+  "name": "Chance - Entfernen falscher Mobilnummern",
+  "script": "frappe.ui.form.on('Opportunity', {\r\n    onload: function(frm) {\r\n        // kurze Verz\u00f6gerung, damit ERPNext seine Standardlogik zuerst ausf\u00fchrt\r\n        setTimeout(() => {\r\n            if (frm.doc.phone && frm.doc.contact_mobile) {\r\n                if (frm.doc.phone === frm.doc.contact_mobile) {\r\n                    frm.set_value('contact_mobile', '');\r\n                }\r\n            }\r\n        }, 200);\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Ersteingabe Lead AZ-IT",
+  "enabled": 1,
+  "modified": "2024-12-04 11:50:40.874636",
+  "module": "Az It",
+  "name": "Ersteingabe Lead AZ IT - Telefonnummerneingabe optimieren",
+  "script": "frappe.ui.form.on('Ersteingabe Lead AZ-IT', {\r\n    validate: function(frm) {\r\n        // Funktion zur Bereinigung und Validierung der Telefonnummer\r\n        function validatePhoneNumber(phoneNumber, fieldName) {\r\n            if (phoneNumber) {\r\n                // \u00dcberpr\u00fcfen, ob die Telefonnummer mit einem + beginnt\r\n                if (phoneNumber.charAt(0) !== '+') {\r\n                    frappe.throw(\"Die Telefonnummer in \" + fieldName + \" muss mit einem + und einer L\u00e4nderkennung beginnen. Beispiel: +49123456\");\r\n                }\r\n\r\n                // Entfernen aller nicht erlaubten Zeichen aus der Eingabe\r\n                phoneNumber = phoneNumber.replace(/\\s+/g, '');   // Leerzeichen entfernen\r\n                phoneNumber = phoneNumber.replace(/\\-+/g, '');   // Bindestriche entfernen\r\n                phoneNumber = phoneNumber.replace(/\\(+/g, '');   // \u00d6ffnende Klammern entfernen\r\n                phoneNumber = phoneNumber.replace(/\\)+/g, '');   // Schlie\u00dfende Klammern entfernen\r\n                phoneNumber = phoneNumber.replace(/\\[+/g, '');   // Eckige Klammern entfernen\r\n                phoneNumber = phoneNumber.replace(/\\]+/g, '');   // Schlie\u00dfende eckige Klammern entfernen\r\n                phoneNumber = phoneNumber.replace(/\\/+/g, '');   // Schr\u00e4gstriche entfernen\r\n\r\n                // Bereinigte Telefonnummer zur\u00fccksetzen\r\n                frm.set_value(fieldName, phoneNumber);\r\n            }\r\n        }\r\n\r\n        // Beide Telefonnummernfelder \u00fcberpr\u00fcfen und berichtigen\r\n        validatePhoneNumber(frm.doc.telefon, 'telefon');\r\n        validatePhoneNumber(frm.doc.telefon_zentrale, 'telefon_zentrale');\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Customer",
   "enabled": 1,
   "modified": "2025-10-29 09:06:27.376080",
@@ -13,11 +57,12 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
-  "dt": "Opportunity",
+  "dt": "Customer",
   "enabled": 1,
+  "modified": "2026-03-11 10:37:38.811030",
   "module": "Az It",
-  "name": "Opportunity Angebot Zugesendet ToDo",
-  "script": "frappe.ui.form.on('Opportunity', {\n    onload_post_render: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n    before_save: function (frm) {\n        if (\n            frm.__original_custom_angebot_zugesendet === 0 &&\n            frm.doc.custom_angebot_zugesendet === 1\n        ) {\n            frappe.call({\n                method: 'frappe.client.insert',\n                args: {\n                    doc: {\n                        doctype: 'ToDo',\n                        date: frappe.datetime.add_days(frappe.datetime.get_today(), 10),\n                        allocated_to: 'k.reichegger@az-it.systems',\n                        description: `WVL ${frm.doc.customer_name} nach Angebot<br><br>Vor 10 Tagen wurde ein Angebot versendet.<br>Bitte nachhaken.<br>Das Angebot befindet sich links als Dateianhang im verknüpften Datensatz.`,\n                        reference_type: 'Opportunity',\n                        reference_name: frm.doc.name,\n                        status: 'Open',\n                        priority: 'Medium',\n                        color: '#e74c3c',\n                    }\n                },\n                callback: function (r) {\n                    if (r.exc) {\n                        frappe.msgprint(__('Das ToDo konnte nicht erstellt werden.'));\n                    } else {\n                        frappe.msgprint(__('Ein ToDo wurde erfolgreich erstellt.'));\n                    }\n                }\n            });\n        }\n    },\n    after_save: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n});",
+  "name": "Kunde - automatische Kundennummer",
+  "script": "frappe.ui.form.on('Customer', {\r\n    onload: function(frm) {\r\n        // Only proceed if the internal customer number field is empty\r\n        if (!frm.doc.custom_interne_kundennummer) {\r\n            generate_customer_number(frm);\r\n        }\r\n    },\r\n\r\n    refresh: function(frm) {\r\n        // Also check on refresh to handle existing documents\r\n        if (!frm.doc.custom_interne_kundennummer) {\r\n            generate_customer_number(frm);\r\n        }\r\n    }\r\n});\r\n\r\nfunction generate_customer_number(frm) {\r\n    // Make a server call to get the next customer number\r\n    frappe.call({\r\n        method: 'frappe.client.get_list',\r\n        args: {\r\n            doctype: 'Customer',\r\n            fields: ['custom_interne_kundennummer'],\r\n            filters: [\r\n                ['custom_interne_kundennummer', '!=', ''],\r\n                ['custom_interne_kundennummer', '>=', '20000']  // Only consider numbers >= 20000\r\n            ],\r\n            order_by: 'custom_interne_kundennummer desc',\r\n            limit_page_length: 1\r\n        },\r\n        callback: function(r) {\r\n            let next_number = 20000; // Starting number\r\n\r\n            if (r.message && r.message.length > 0) {\r\n                let highest_number = r.message[0].custom_interne_kundennummer;\r\n\r\n                // Convert to integer and add 1\r\n                let current_number = parseInt(highest_number);\r\n\r\n                if (!isNaN(current_number) && current_number >= 20000) {\r\n                    next_number = current_number + 1;\r\n                }\r\n            }\r\n\r\n            // Set the value in the field (exactly 5 characters)\r\n            frm.set_value('custom_interne_kundennummer', String(next_number).padStart(5, '0'));\r\n        }\r\n    });\r\n}",
   "view": "Form"
  },
  {
@@ -25,9 +70,76 @@
   "doctype": "Client Script",
   "dt": "Lead",
   "enabled": 1,
+  "modified": "2024-12-04 11:56:51.336995",
+  "module": "Az It",
+  "name": "Lead - Auswahl Prim\u00e4rkontakt",
+  "script": "frappe.ui.form.on(\"Lead\", \"onload\", function(frm) {\r\n    frm.set_query(\"custom_aktueller_prim\u00e4rkontakt\", function() {\r\n        return {\r\n            \"filters\": [\r\n                [\"Contact\", \"link_name\", \"=\", frm.doc.name],\r\n            ]\r\n        };\r\n    });\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Lead",
+  "enabled": 1,
+  "modified": "2025-01-16 11:27:28.782116",
+  "module": "Az It",
+  "name": "Lead - Button - Legt Firmenname in Zwischenablage",
+  "script": "frappe.ui.form.on('Lead', {\r\n    refresh: function(frm) {\r\n        frm.add_custom_button(__('Copy Company Name'), function() {\r\n            if (frm.doc.company_name) {\r\n                // Text in die Zwischenablage kopieren\r\n                navigator.clipboard.writeText(frm.doc.company_name)\r\n                    .then(() => {\r\n                        frappe.show_alert({\r\n                            message: __('Company Name copied to clipboard: {0}', [frm.doc.company_name]),\r\n                            indicator: 'green'\r\n                        });\r\n                    })\r\n                    .catch(err => {\r\n                        frappe.msgprint({\r\n                            title: __('Error'),\r\n                            message: __('Failed to copy Company Name to clipboard.'),\r\n                            indicator: 'red'\r\n                        });\r\n                        console.error('Clipboard write failed', err);\r\n                    });\r\n            } else {\r\n                frappe.msgprint(__('No Company Name to copy.'));\r\n            }\r\n        }, __(\"Aktionen\")); // Optional: Button-Gruppe, in der der Button angezeigt wird\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Lead",
+  "enabled": 1,
+  "modified": "2024-12-04 11:49:52.160196",
+  "module": "Az It",
+  "name": "Lead - Salutation aus dem Prim\u00e4rkontakt in das unsichtbare Salutation \u00fcbernehmen",
+  "script": "frappe.ui.form.on('Lead', {\r\n    custom_aktueller_prim\u00e4rkontakt: function(frm) {\r\n        if (frm.doc.custom_aktueller_prim\u00e4rkontakt) {\r\n            frappe.db.get_doc('Contact', frm.doc.custom_aktueller_prim\u00e4rkontakt)\r\n                .then(contact => {\r\n                    // \u00dcbernahme der Salutation\r\n                    if (contact.salutation) {\r\n                        frm.set_value('salutation', contact.salutation);\r\n                    }\r\n                    // \u00dcbernahme von first_name, middle_name, last_name\r\n                    if (contact.first_name) {\r\n                        frm.set_value('first_name', contact.first_name);\r\n                    }\r\n                    if (contact.middle_name) {\r\n                        frm.set_value('middle_name', contact.middle_name);\r\n                    }\r\n                    if (contact.last_name) {\r\n                        frm.set_value('last_name', contact.last_name);\r\n                    }\r\n                });\r\n        }\r\n    },\r\n    \r\n    // Bei \u00c4nderungen in Lead soll das Skript ausgel\u00f6st werden\r\n    refresh: function(frm) {\r\n        frm.trigger('custom_aktueller_prim\u00e4rkontakt');\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Lead",
+  "enabled": 1,
+  "modified": "2024-12-04 11:51:22.807200",
+  "module": "Az It",
+  "name": "Lead - Telefon Zentrale Eingabekorrektur",
+  "script": "frappe.ui.form.on('Lead', {\n\tvalidate: function(frm) {\n\t    if (frm.doc.custom_tel_zentrale)\n\t        {\n            // Telefonnummer aus dem entsprechenden Feld abrufen\n            let phoneNumber = frm.doc.custom_tel_zentrale;\n            \n            \n            // \u00dcberpr\u00fcfen, ob unzul\u00e4ssige Zeichen vorhanden sind (es passiert nix, aber ich lasse das jetzt erstmal drin.)\n            const forbiddenChars = /[\\(\\)\\[\\]\\/]/;\n            if (forbiddenChars.test(phoneNumber)) {\n                // frappe.throw (\"Die Telefonnummer darf keine Klammern, Schr\u00e4gstriche, Bindestriche oder Leerzeichen enthalten.\");\n                }\n        \n        \n            // \u00dcberpr\u00fcfen, ob die Telefonnummer mit einem + beginnt\n            if (phoneNumber.charAt(0) !== '+') {\n                frappe.throw (\"Die Telefonnummer muss mit einem + und einer L\u00e4nderkennung beginnen. Beispiel: +49123456\");\n                }\n    \n    \n    \n            // Entfernen aller nicht erlaubten Zeichen aus der Eingabe\n            phoneNumber = phoneNumber.replace(/\\s+/g, '');\n            phoneNumber = phoneNumber.replace(/\\-+/g, '');\n            phoneNumber = phoneNumber.replace(/\\(+/g, '');\n            phoneNumber = phoneNumber.replace(/\\)+/g, '');\n            phoneNumber = phoneNumber.replace(/\\[+/g, '');\n            phoneNumber = phoneNumber.replace(/\\]+/g, '');\n            phoneNumber = phoneNumber.replace(/\\/+/g, '');\n            phoneNumber = phoneNumber.replace(/\\+/g, '');\n            // Feld beschreiben...\n            frm.set_value('custom_tel_zentrale', '+' + phoneNumber);\n\t        }\n    }\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Lead",
+  "enabled": 1,
+  "modified": "2026-03-19 14:42:47.000000",
   "module": "Az It",
   "name": "Lead Angebot Zugesendet ToDo",
-  "script": "frappe.ui.form.on('Lead', {\n    onload_post_render: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n    before_save: function (frm) {\n        if (\n            frm.__original_custom_angebot_zugesendet === 0 &&\n            frm.doc.custom_angebot_zugesendet === 1\n        ) {\n            frappe.call({\n                method: 'frappe.client.insert',\n                args: {\n                    doc: {\n                        doctype: 'ToDo',\n                        date: frappe.datetime.add_days(frappe.datetime.get_today(), 10),\n                        allocated_to: 'k.reichegger@az-it.systems',\n                        description: `WVL ${frm.doc.company_name} nach Angebot<br><br>Vor 10 Tagen wurde ein Angebot versendet.<br>Bitte nachhaken.<br>Das Angebot befindet sich links als Dateianhang im verknüpften Datensatz.`,\n                        reference_type: 'Lead',\n                        reference_name: frm.doc.name,\n                        status: 'Open',\n                        priority: 'Medium',\n                        color: '#e74c3c',\n                    }\n                },\n                callback: function (r) {\n                    if (r.exc) {\n                        frappe.msgprint(__('Das ToDo konnte nicht erstellt werden.'));\n                    } else {\n                        frappe.msgprint(__('Ein ToDo wurde erfolgreich erstellt.'));\n                    }\n                }\n            });\n        }\n    },\n    after_save: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n});",
+  "script": "frappe.ui.form.on('Lead', {\n    onload_post_render: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n    before_save: function (frm) {\n        if (\n            frm.__original_custom_angebot_zugesendet === 0 &&\n            frm.doc.custom_angebot_zugesendet === 1\n        ) {\n            frappe.call({\n                method: 'frappe.client.insert',\n                args: {\n                    doc: {\n                        doctype: 'ToDo',\n                        date: frappe.datetime.add_days(frappe.datetime.get_today(), 10),\n                        allocated_to: 'k.reichegger@az-it.systems',\n                        description: `WVL ${frm.doc.company_name} nach Angebot<br><br>Vor 10 Tagen wurde ein Angebot versendet.<br>Bitte nachhaken.<br>Das Angebot befindet sich links als Dateianhang im verkn\u00fcpften Datensatz.`,\n                        reference_type: 'Lead',\n                        reference_name: frm.doc.name,\n                        status: 'Open',\n                        priority: 'Medium',\n                        color: '#e74c3c',\n                    }\n                },\n                callback: function (r) {\n                    if (r.exc) {\n                        frappe.msgprint(__('Das ToDo konnte nicht erstellt werden.'));\n                    } else {\n                        frappe.msgprint(__('Ein ToDo wurde erfolgreich erstellt.'));\n                    }\n                }\n            });\n        }\n    },\n    after_save: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Opportunity",
+  "enabled": 1,
+  "modified": "2026-03-19 14:42:47.000000",
+  "module": "Az It",
+  "name": "Opportunity Angebot Zugesendet ToDo",
+  "script": "frappe.ui.form.on('Opportunity', {\n    onload_post_render: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n    before_save: function (frm) {\n        if (\n            frm.__original_custom_angebot_zugesendet === 0 &&\n            frm.doc.custom_angebot_zugesendet === 1\n        ) {\n            frappe.call({\n                method: 'frappe.client.insert',\n                args: {\n                    doc: {\n                        doctype: 'ToDo',\n                        date: frappe.datetime.add_days(frappe.datetime.get_today(), 10),\n                        allocated_to: 'k.reichegger@az-it.systems',\n                        description: `WVL ${frm.doc.customer_name} nach Angebot<br><br>Vor 10 Tagen wurde ein Angebot versendet.<br>Bitte nachhaken.<br>Das Angebot befindet sich links als Dateianhang im verkn\u00fcpften Datensatz.`,\n                        reference_type: 'Opportunity',\n                        reference_name: frm.doc.name,\n                        status: 'Open',\n                        priority: 'Medium',\n                        color: '#e74c3c',\n                    }\n                },\n                callback: function (r) {\n                    if (r.exc) {\n                        frappe.msgprint(__('Das ToDo konnte nicht erstellt werden.'));\n                    } else {\n                        frappe.msgprint(__('Ein ToDo wurde erfolgreich erstellt.'));\n                    }\n                }\n            });\n        }\n    },\n    after_save: function (frm) {\n        frm.__original_custom_angebot_zugesendet = frm.doc.custom_angebot_zugesendet;\n    },\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "ToDo",
+  "enabled": 1,
+  "modified": "2025-02-03 16:02:56.406168",
+  "module": "Az It",
+  "name": "ToDo - Aufgabe mit letztem Kommentar versehen",
+  "script": "frappe.ui.form.on('ToDo', {\r\n    onload: function(frm) {\r\n        if (frm.doc.reference_name && frm.doc.reference_type) {\r\n            frappe.call({\r\n                method: \"frappe.client.get\",\r\n                args: {\r\n                    doctype: frm.doc.reference_type,\r\n                    name: frm.doc.reference_name\r\n                },\r\n                callback: function(response) {\r\n                    if (response.message) {\r\n                        let linked_doc = response.message;\r\n\r\n                        if (linked_doc.notes && linked_doc.notes.length > 0) {\r\n                            // Sortiere die Notizen basierend auf dem 'added_on'-Zeitpunkt in absteigender Reihenfolge\r\n                            linked_doc.notes.sort((a, b) => new Date(b.added_on) - new Date(a.added_on));\r\n\r\n                            // Nimm die erste Notiz aus der sortierten Liste, die jetzt die neueste ist\r\n                            let latest_note = linked_doc.notes[0];\r\n\r\n                            if (latest_note) {\r\n                                frm.set_value('custom_letzter_kommentar_an_verkn\u00fcpften_daten', latest_note.note);\r\n                                frm.save();\r\n                            }\r\n                        }\r\n                    }\r\n                }\r\n            });\r\n        }\r\n    }\r\n});\r\n",
   "view": "Form"
  }
 ]

@@ -269,7 +269,19 @@ fixtures = [
         "doctype": "Client Script",
         "filters": [
             ["name", "in", [
+                "Angebot - Kundennummer ziehen",
+                "Chance - Button legt Firmenname in die Zwischenablage",
+                "Chance - Entfernen falscher Mobilnummern",
+                "Ersteingabe Lead AZ IT - Telefonnummerneingabe optimieren",
                 "Internal Customer Series",
+                "Kunde - automatische Kundennummer",
+                "Lead - Auswahl Primärkontakt",
+                "Lead - Button - Legt Firmenname in Zwischenablage",
+                "Lead - Salutation aus dem Primärkontakt in das unsichtbare Salutation übernehmen",
+                "Lead - Telefon Zentrale Eingabekorrektur",
+                "Lead Angebot Zugesendet ToDo",
+                "Opportunity Angebot Zugesendet ToDo",
+                "ToDo - Aufgabe mit letztem Kommentar versehen",
             ]]
         ]
     },
@@ -277,10 +289,15 @@ fixtures = [
         "doctype": "Server Script",
         "filters": [
             ["name", "in", [
-                "Customer Internal Number Auto Assignment - Update",
-                "Customer Internal Number Auto Assignment",
-                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v2",
+                "Adresse - Umbenennung der ID nach Interner Typ und Typ.",
                 "Aufgabe (ToDo) automatische Wiedervorlage erzeugen (V2)",
+                "Auftrag heraussuchen (Lieferschein)",
+                "Chance - Mutterunternehmen wird nach Speichern auf verlinkter Adresse u Kontakt jeweils verlinkt",
+                "Customer Internal Number Auto Assignment - Update",
+                "Ersteingabe Lead AZ-IT - Erzeuge Lead, Adresse und Kontakt v3",
+                "Glockenbenachrichtigung bei eingehender Email",
+                "Lead - Mutterunternehmen wird nach Speichern auf verlinkter Adresse u Kontakt jeweils verlinkt",
+                "Lead - Pruefung neuer Aufgaben 4d nach WVL ToDo oder 2 davor, sonst Feld befüllen",
                 "Lieferschein - ausliefernder_mitarbieter beim Speichern eintragen",
             ]]
         ]
