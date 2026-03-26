@@ -311,7 +311,7 @@ fixtures = [
     {
         "doctype": "Property Setter",
         "filters": [
-            ["doc_type", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice", "Item"]]
+            ["doc_type", "in", ["Delivery Note", "Opportunity", "Sales Order", "Quotation", "Sales Invoice", "Item"]]
         ]
     },
 ]
