@@ -328,7 +328,7 @@ def restore_backup_locally(downloaded: list[Path], bench_dir: Path, site: str) -
 
     # Datenbank + Files einspielen
     print(f"      → Datenbank: {db_file.name}")
-    restore_cmd = [bench_bin, "--site", site, "restore", str(db_file), "--force"]
+    restore_cmd = [bench_bin, "--site", site, "restore", str(db_file), "--force", "--mariadb-root-password", "123"]
     if public_files:
         restore_cmd += ["--with-public-files", str(public_files)]
     if private_files:
