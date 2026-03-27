@@ -201,7 +201,7 @@ function ensure_blank_line_after_discount_sales_invoice(description) {
     let endPos = match.index + match[0].length;
     let after = description.substring(endPos).replace(/^[\n\r ]+/, '');
     if (!/<p>\s*(<br\s*\/?>)?\s*<\/p>/i.test(after.match(/^<[^>]*>/)?.[0] || '')) {
-        return description.substring(0, endPos) + '<p></p>' + description.substring(endPos);
+        return description.substring(0, endPos) + '<p><br></p>' + description.substring(endPos);
     }
     return description;
 }

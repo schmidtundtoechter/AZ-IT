@@ -149,6 +149,6 @@ def ensure_blank_line_after_discount(description):
 
     after = description[match.end():].lstrip('\n\r ')
     if not re.match(r'<p>\s*(<br\s*/?>)?\s*</p>', after, re.IGNORECASE):
-        return description[:match.end()] + '<p></p>' + description[match.end():]
+        return description[:match.end()] + '<p><br></p>' + description[match.end():]
 
     return description

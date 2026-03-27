@@ -100,6 +100,7 @@ def _prepend_item_name_html(description, item_name):
 	item_name_p.append(strong_tag)
 
 	blank_line_p = soup.new_tag('p')
+	blank_line_p.append(soup.new_tag('br'))
 
 	# Find or create wrapper div
 	wrapper_div = _find_or_create_wrapper_div(soup, description)
