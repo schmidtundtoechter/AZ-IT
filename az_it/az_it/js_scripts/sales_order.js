@@ -113,6 +113,17 @@ frappe.ui.form.on('Sales Order', {
 
 // Custom Discount Logic for Sales Order Items
 frappe.ui.form.on('Sales Order Item', {
+    item_code: function(frm, cdt, cdn) {
+        frappe.after_ajax(function() {
+            let row = locals[cdt][cdn];
+            if (!row.description) return;
+            let normalized = ensure_blank_line_after_name_sales_order(row.description);
+            if (normalized !== row.description) {
+                frappe.model.set_value(cdt, cdn, 'description', normalized);
+            }
+        });
+    },
+
     rate: function(frm, cdt, cdn) {
         let row = locals[cdt][cdn];
 
@@ -216,6 +227,7 @@ function update_discount_description_sales_order(frm, cdt, cdn, discount_percent
     }
 
     description = ensure_blank_line_after_discount_sales_order(description);
+    description = ensure_blank_line_after_name_sales_order(description);
     frappe.model.set_value(cdt, cdn, 'description', description);
 }
 
@@ -226,10 +238,29 @@ function ensure_blank_line_after_discount_sales_order(description) {
     if (!match) return description;
     let endPos = match.index + match[0].length;
     let after = description.substring(endPos).replace(/^[\n\r ]+/, '');
-    if (!/<p>\s*(<br\s*\/?>)?\s*<\/p>/i.test(after.match(/^<[^>]*>/)?.[0] || '')) {
+    if (!/<p>\s*(<br\s*\/?>)?\s*<\/p>/i.test(after)) {
         return description.substring(0, endPos) + '<p><br></p>' + description.substring(endPos);
     }
     return description;
+}
+
+// Helper function to ensure blank line always follows the bold item name
+function ensure_blank_line_after_name_sales_order(description) {
+    if (!description) return description;
+
+    let match = description.match(/<\/(?:strong|b)>\s*<\/p>/i);
+    if (!match) return description;
+
+    let endPos = match.index + match[0].length;
+    let after = description.substring(endPos).replace(/^[\n\r ]+/, '');
+
+    // Blank line already present — nothing to do
+    if (/^<p>\s*(?:<br\s*\/?>\s*)?<\/p>/i.test(after)) return description;
+
+    // Discount line follows name directly — blank line goes after discount, not here
+    if (/^<p[^>]*style="[^"]*color:\s*red/i.test(after)) return description;
+
+    return description.substring(0, endPos) + '<p><br></p>' + description.substring(endPos);
 }
 
 // Helper function to remove existing discount line from description
@@ -247,6 +278,9 @@ function remove_discount_line_sales_order(description) {
         /inklusive\s+\d+%\s+Rabatt/gi,
         ''
     );
+
+    // Collapse consecutive blank paragraphs into one
+    cleaned = cleaned.replace(/(<p>\s*(?:<br\s*\/?>\s*)?<\/p>\s*){2,}/gi, '<p><br></p>');
 
     // Clean up extra newlines
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();

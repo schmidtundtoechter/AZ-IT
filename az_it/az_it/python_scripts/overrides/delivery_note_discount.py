@@ -66,6 +66,9 @@ def validate_custom_discount(doc, method=None):
             if item.description:
                 item.description = remove_discount_from_description(item.description)
 
+        # Always ensure blank line after the bold name (required in all cases)
+        item.description = ensure_blank_line_after_name(item.description)
+
 
 def has_discount_in_description(description, discount_percent):
     """Check if description contains the discount line."""
@@ -133,6 +136,9 @@ def remove_discount_from_description(description):
         flags=re.IGNORECASE
     )
 
+    # Collapse consecutive blank paragraphs into one
+    cleaned = re.sub(r'(<p>\s*(?:<br\s*/?>\s*)?</p>\s*){2,}', '<p><br></p>', cleaned, flags=re.IGNORECASE)
+
     # Clean up extra whitespace
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
 
@@ -156,3 +162,32 @@ def ensure_blank_line_after_discount(description):
         return description[:match.end()] + '<p><br></p>' + description[match.end():]
 
     return description
+
+
+def ensure_blank_line_after_name(description):
+    """Ensure a blank line always follows the bold item name paragraph.
+
+    Required structure (ALWAYS):
+        Name (bold) | [blank] | Description          (no discount)
+        Name (bold) | Discount (red) | [blank] | Description  (with discount)
+
+    If a discount line already follows the name, skip — the blank line
+    belongs after the discount, not between name and discount.
+    """
+    if not description:
+        return description
+
+    match = re.search(r'</(?:strong|b)>\s*</p>', description, re.IGNORECASE)
+    if not match:
+        return description
+
+    end_pos = match.end()
+    after = description[end_pos:].lstrip('\n\r ')
+
+    if re.match(r'<p>\s*(?:<br\s*/?>\s*)?</p>', after, re.IGNORECASE):
+        return description
+
+    if re.match(r'<p[^>]*style="[^"]*color:\s*red', after, re.IGNORECASE):
+        return description
+
+    return description[:end_pos] + '<p><br></p>' + description[end_pos:]
