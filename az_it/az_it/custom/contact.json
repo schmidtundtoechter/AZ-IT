@@ -17,6 +17,24 @@
    "fieldtype": "Check",
    "label": "Is Billing Contact",
    "insert_after": "is_primary_contact"
+  },
+  {
+   "dt": "Contact",
+   "fieldname": "custom_telefon_zentrale",
+   "fieldtype": "Data",
+   "label": "Telefon Zentrale",
+   "insert_after": "company_name",
+   "allow_in_quick_entry": 1,
+   "translatable": 1
+  },
+  {
+   "dt": "Contact",
+   "fieldname": "custom_email_zentrale",
+   "fieldtype": "Data",
+   "label": "Email Zentrale",
+   "insert_after": "custom_telefon_zentrale",
+   "allow_in_quick_entry": 1,
+   "translatable": 1
   }
  ],
  "custom_perms": [],
