@@ -50,10 +50,8 @@
       <Request
         Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.lookup_contact_by_number?number=[Number]"
         MessagePasses="0"
-        RequestEncoding="UrlEncoded"
         RequestType="Get"
-        ResponseType="Json"
-        RequestContentType="application/json">
+        ResponseType="Json">
         <Headers>
           <Value Key="Authorization" Passes="0" Type="String">token [APIToken]</Value>
         </Headers>
