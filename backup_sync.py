@@ -352,6 +352,14 @@ def restore_backup_locally(downloaded: list[Path], bench_dir: Path, site: str) -
     else:
         print("      \u26a0 Migration mit Fehlern abgeschlossen (siehe Ausgabe oben).")
 
+    # Scheduler explizit aktivieren – bench restore setzt pause_scheduler:1 automatisch
+    print("      → Aktiviere Scheduler ...")
+    rc_sched = run_local_stream([bench_bin, "--site", site, "scheduler", "enable"])
+    if rc_sched == 0:
+        print("      ✓ Scheduler aktiviert")
+    else:
+        print("      ⚠ Scheduler konnte nicht aktiviert werden")
+
     # Site-Konfiguration NACH migrate setzen – migrate überschreibt die Config sonst
     local_config = bench_dir / "sites" / site / "site_config.json"
     try:
@@ -363,13 +371,16 @@ def restore_backup_locally(downloaded: list[Path], bench_dir: Path, site: str) -
 
         # Lokalen host_name immer setzen (wird durch restore/migrate überschrieben)
         local_cfg["host_name"] = f"http://{site}:8000"
+        # Sicherstellen dass Scheduler und Wartungsmodus lokal deaktiviert sind
+        local_cfg["pause_scheduler"] = 0
+        local_cfg["maintenance_mode"] = 0
 
-        # Sichere Keys aus Remote-Config übernehmen
+        # Nur unkritische Keys aus Remote-Config übernehmen (niemals Scheduler/Wartung)
         if config_file:
             try:
                 with open(config_file) as f:
                     remote_cfg = json.load(f)
-                for key in {"maintenance_mode", "pause_scheduler", "limits"}:
+                for key in {"limits"}:
                     if key in remote_cfg:
                         local_cfg[key] = remote_cfg[key]
             except Exception as e:
