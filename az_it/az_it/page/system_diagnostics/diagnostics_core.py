@@ -306,41 +306,120 @@ def _requests_head(url, verify=None):
     kwargs = {"timeout": 5}
     if verify is not None:
         kwargs["verify"] = verify
-    requests.head(url, **kwargs)
+    return requests.head(url, **kwargs)
+
+
+def _format_http_status_debug(url, response):
+    status = response.status_code
+    lines = [f"HTTP-Status: {status}", f"URL: {url}"]
+
+    rate_limit = response.headers.get("X-RateLimit-Remaining")
+    if rate_limit is not None:
+        lines.append(f"X-RateLimit-Remaining: {rate_limit}")
+
+    rate_reset = response.headers.get("X-RateLimit-Reset")
+    if rate_reset is not None:
+        lines.append(f"X-RateLimit-Reset: {rate_reset}")
+
+    return "\n".join(lines)
+
+
+def _effective_requests_ca_bundle():
+    """Return the CA bundle path requests will effectively use in this environment."""
+    return (
+        os.environ.get("REQUESTS_CA_BUNDLE")
+        or os.environ.get("CURL_CA_BUNDLE")
+        or certifi.where()
+    )
+
+
+def _has_ca_override():
+    return bool(os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("CURL_CA_BUNDLE"))
 
 
 def test_python_ca_bundle_info(name):
+    effective_ca = _effective_requests_ca_bundle()
     debug = (
         f"certifi: {certifi.where()}\n"
         f"REQUESTS_CA_BUNDLE: {os.environ.get('REQUESTS_CA_BUNDLE', '(nicht gesetzt)')}\n"
+        f"CURL_CA_BUNDLE: {os.environ.get('CURL_CA_BUNDLE', '(nicht gesetzt)')}\n"
         f"SSL_CERT_FILE: {os.environ.get('SSL_CERT_FILE', '(nicht gesetzt)')}\n"
+        f"Effektives requests-CA-Bundle (Default): {effective_ca}\n"
         f"OpenSSL: {ssl.OPENSSL_VERSION}"
     )
     return {"name": name, "passed": True, "debug": debug}
 
 
 def test_python_requests_default(name, url):
+    certifi_bundle = certifi.where()
     try:
-        _requests_head(url)
-        return {"name": name, "passed": True, "debug": ""}
+        # Force certifi to compare against environment-driven CA overrides.
+        response = _requests_head(url, verify=certifi_bundle)
+        if response.status_code >= 400:
+            return {
+                "name": name,
+                "passed": False,
+                "debug": (
+                    f"Unerwarteter HTTP-Fehler fuer requests (certifi).\n"
+                    f"Verwendetes CA-Bundle: {certifi_bundle}\n"
+                    f"{_format_http_status_debug(url, response)}"
+                ),
+            }
+
+        return {
+            "name": name,
+            "passed": True,
+            "debug": (
+                f"Verwendetes CA-Bundle: {certifi_bundle}\n"
+                f"HTTP-Status: {response.status_code}"
+            ),
+        }
     except Exception as e:
+        err = str(e)
+        if _has_ca_override() and "CERTIFICATE_VERIFY_FAILED" in err:
+            return {
+                "name": f"{name} (erwartete Abweichung mit Unternehmens-CA)",
+                "passed": True,
+                "debug": (
+                    f"certifi-Check fehlgeschlagen wie erwartet: {err}\n\n"
+                    f"Verwendetes certifi-Bundle: {certifi_bundle}\n"
+                    f"Effektives Runtime-Bundle: {_effective_requests_ca_bundle()}\n"
+                    "Interpretation: Runtime vertraut auf System-/Unternehmens-CA statt certifi."
+                ),
+            }
+
         debug = (
-            f"Python requests Error: {str(e)}\n\n"
-            f"certifi: {certifi.where()}\n"
+            f"Python requests Error: {err}\n\n"
+            f"Verwendetes CA-Bundle: {certifi_bundle}\n"
             f"REQUESTS_CA_BUNDLE: {os.environ.get('REQUESTS_CA_BUNDLE', '(nicht gesetzt)')}\n"
+            f"CURL_CA_BUNDLE: {os.environ.get('CURL_CA_BUNDLE', '(nicht gesetzt)')}\n"
             f"SSL_CERT_FILE: {os.environ.get('SSL_CERT_FILE', '(nicht gesetzt)')}\n\n"
-            "Hinweis: Das ist der Default-certifi Pfad."
+            "Hinweis: Dieser Test erzwingt certifi (unabhaengig von REQUESTS_CA_BUNDLE)."
         )
         return {"name": name, "passed": False, "debug": debug}
 
 
 def test_python_requests_system_ca(name, url, system_ca_bundle=SYSTEM_CA_BUNDLE):
     try:
-        _requests_head(url, verify=system_ca_bundle)
+        response = _requests_head(url, verify=system_ca_bundle)
+        if response.status_code >= 400:
+            return {
+                "name": name,
+                "passed": False,
+                "debug": (
+                    "Unerwarteter HTTP-Fehler fuer requests (System-CA).\n"
+                    f"Verwendetes CA-Bundle: {system_ca_bundle}\n"
+                    f"{_format_http_status_debug(url, response)}"
+                ),
+            }
+
         return {
             "name": name,
             "passed": True,
-            "debug": f"Verwendetes CA-Bundle: {system_ca_bundle}",
+            "debug": (
+                f"Verwendetes CA-Bundle: {system_ca_bundle}\n"
+                f"HTTP-Status: {response.status_code}"
+            ),
         }
     except Exception as e:
         debug = (
@@ -386,7 +465,7 @@ def run_diagnostics(
             test_https("www.google.com HTTPS Verbindung (Vergleichstest)", "https://www.google.com"),
             test_python_ca_bundle_info("Python CA-Bundle Info (certifi vs Umgebungsvariablen)"),
             test_python_requests_default(
-                "Python requests GitHub HTTPS (Default certifi, fuer Frappe)",
+                "Python requests GitHub HTTPS (explizit certifi)",
                 "https://api.github.com",
             ),
             test_python_requests_system_ca(
@@ -395,7 +474,7 @@ def run_diagnostics(
                 system_ca_bundle=system_ca_bundle,
             ),
             test_python_requests_default(
-                "Python requests Frappe-Repos-API (Default certifi, bench install-app Test)",
+                "Python requests Frappe-Repos-API (explizit certifi)",
                 "https://api.github.com/repos/frappe/helpdesk",
             ),
             test_python_requests_system_ca(
