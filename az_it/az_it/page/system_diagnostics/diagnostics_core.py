@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 import re
 import socket
 import ssl
@@ -33,25 +34,44 @@ def run_command(cmd, timeout=10, shell=True):
 
 def get_app_version_info(app_dir=None):
     """Return git commit hash and author date of the az_it app repo."""
+    def _sanitize_commit(value):
+        value = (value or "").strip()
+        return value[:12] if value else ""
+
     if app_dir is None:
-        # __file__ is .../apps/az_it/az_it/az_it/page/system_diagnostics/diagnostics_core.py
-        # 5 dirname-Ebenen hoch -> apps/az_it/ (Git-Repo-Root)
-        import pathlib
-        app_dir = str(pathlib.Path(__file__).resolve().parents[4])
+        # Search upwards until a git repository root is found.
+        for parent in pathlib.Path(__file__).resolve().parents:
+            if (parent / ".git").exists():
+                app_dir = str(parent)
+                break
+
+    if not app_dir:
+        app_dir = str(pathlib.Path(DEFAULT_BENCH_DIR) / "apps" / "az_it")
+
+    commit_hash = ""
+    commit_date = ""
+
     try:
         import subprocess as _sp
+
         result = _sp.run(
             ["git", "log", "-1", "--format=%H %ai"],
-            capture_output=True, text=True, timeout=5, cwd=app_dir
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=app_dir,
         )
         if result.returncode == 0 and result.stdout.strip():
             parts = result.stdout.strip().split(" ", 1)
-            commit_hash = parts[0][:12]  # short hash
-            commit_date = parts[1] if len(parts) > 1 else ""
-            return {"commit": commit_hash, "date": commit_date, "available": True}
+            commit_hash = _sanitize_commit(parts[0])
+            commit_date = (parts[1] if len(parts) > 1 else "").strip()
     except Exception:
         pass
-    return {"commit": "unbekannt", "date": "", "available": False}
+
+    if not commit_hash:
+        return {"commit": "unbekannt", "date": "", "available": False}
+
+    return {"commit": commit_hash, "date": commit_date, "available": True}
 
 
 def get_system_info():
@@ -63,11 +83,12 @@ def get_system_info():
         username = username.strip()
 
     version = get_app_version_info()
+    commit = (version.get("commit") or "").strip() or "unbekannt"
     return {
         "hostname": socket.gethostname(),
         "username": username,
-        "commit": version["commit"],
-        "commit_date": version["date"],
+        "commit": commit,
+        "commit_date": (version.get("date") or "").strip(),
     }
 
 

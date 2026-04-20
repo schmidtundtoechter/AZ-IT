@@ -277,8 +277,10 @@
                 if (r.message) {
                     $('#hostname').text(r.message.hostname);
                     $('#username').text(r.message.username);
-                    $('#appCommit').text(r.message.commit || '-');
-                    $('#appCommitDate').text(r.message.commit_date || '');
+                    const commit = (r.message.commit || '').trim() || 'unbekannt';
+                    const commitDate = (r.message.commit_date || '').trim();
+                    $('#appCommit').text(commit);
+                    $('#appCommitDate').text(commitDate);
                 }
             }
         });
