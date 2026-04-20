@@ -31,6 +31,29 @@ def run_command(cmd, timeout=10, shell=True):
         return -1, "", str(e)
 
 
+def get_app_version_info(app_dir=None):
+    """Return git commit hash and author date of the az_it app repo."""
+    if app_dir is None:
+        # __file__ is .../apps/az_it/az_it/az_it/page/system_diagnostics/diagnostics_core.py
+        # 5 dirname-Ebenen hoch -> apps/az_it/ (Git-Repo-Root)
+        import pathlib
+        app_dir = str(pathlib.Path(__file__).resolve().parents[4])
+    try:
+        import subprocess as _sp
+        result = _sp.run(
+            ["git", "log", "-1", "--format=%H %ai"],
+            capture_output=True, text=True, timeout=5, cwd=app_dir
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            parts = result.stdout.strip().split(" ", 1)
+            commit_hash = parts[0][:12]  # short hash
+            commit_date = parts[1] if len(parts) > 1 else ""
+            return {"commit": commit_hash, "date": commit_date, "available": True}
+    except Exception:
+        pass
+    return {"commit": "unbekannt", "date": "", "available": False}
+
+
 def get_system_info():
     """Get hostname and current username."""
     returncode, username, _stderr = run_command("whoami")
@@ -39,9 +62,12 @@ def get_system_info():
     else:
         username = username.strip()
 
+    version = get_app_version_info()
     return {
         "hostname": socket.gethostname(),
         "username": username,
+        "commit": version["commit"],
+        "commit_date": version["date"],
     }
 
 
@@ -400,11 +426,19 @@ def run_diagnostics(
         ]
         results["categories"]["5) wkhtmltopdf"] = {"tests": wkhtml_tests}
 
-    for category in results["categories"].values():
+    log_lines = []
+    for cat_name, category in results["categories"].items():
+        log_lines.append(f"\n=== {cat_name} ===")
         for test in category["tests"]:
             if test["passed"]:
                 results["tests_passed"] += 1
+                log_lines.append(f"  [OK]  {test['name']}")
             else:
                 results["tests_failed"] += 1
+                log_lines.append(f"  [FAIL] {test['name']}")
+                if test.get("debug", "").strip():
+                    for line in test["debug"].strip().splitlines():
+                        log_lines.append(f"         {line}")
 
+    results["full_log"] = "\n".join(log_lines)
     return results

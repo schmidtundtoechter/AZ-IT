@@ -15,11 +15,14 @@ NC = "\033[0m"
 
 
 def _print_header(site_host):
+    info = core.get_system_info()
+    version = core.get_app_version_info()
     print(f"{BOLD}============================================================{NC}")
     print(f"{BOLD} SYSTEMDIAGNOSE - PDF / TLS / WKHTMLTOPDF / NODE{NC}")
-    print(f" Server: {site_host}")
-    print(f" Datum: {datetime.now()}")
-    print(f" Benutzer: {core.get_system_info()['username']}")
+    print(f" Server:  {site_host}")
+    print(f" Datum:   {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f" Benutzer:{info['username']}")
+    print(f" Commit:  {version['commit']}  {version['date']}")
     print(f"{BOLD}============================================================{NC}")
     print()
 

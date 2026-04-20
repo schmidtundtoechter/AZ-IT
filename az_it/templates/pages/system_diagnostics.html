@@ -24,6 +24,15 @@
                         <strong>Benutzer:</strong> <span id="username">-</span>
                     </div>
                 </div>
+                <div class="col-md-12 mt-2">
+                    <div class="info-box" style="font-family: monospace; font-size: 0.85em; color: #555;">
+                        <i class="fa fa-code-branch"></i>
+                        <strong>Commit:</strong>
+                        <span id="appCommit">-</span>
+                        &nbsp;&nbsp;
+                        <span id="appCommitDate" style="color: #888;"></span>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -109,6 +118,23 @@
                 </div>
 
                 <div id="testResults"></div>
+
+                <div id="fullLogSection" class="mt-4">
+                    <div class="card">
+                        <div class="card-header" style="cursor: pointer; background: #f0f0f0;" id="fullLogToggle"
+                             onclick="$('#fullLogBody').toggle(); $('#fullLogChevron').toggleClass('fa-chevron-down fa-chevron-up');">
+                            <h5 class="mb-0">
+                                <i class="fa fa-terminal"></i> Vollständiges Log
+                                <i id="fullLogChevron" class="fa fa-chevron-down float-right mt-1"></i>
+                            </h5>
+                        </div>
+                        <div id="fullLogBody" style="display: none;">
+                            <div class="card-body p-0">
+                                <pre id="fullLogContent" style="margin: 0; padding: 16px; background: #1e1e1e; color: #d4d4d4; font-size: 0.85em; max-height: 600px; overflow-y: auto; border-radius: 0 0 4px 4px; white-space: pre-wrap; word-wrap: break-word;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -251,6 +277,8 @@
                 if (r.message) {
                     $('#hostname').text(r.message.hostname);
                     $('#username').text(r.message.username);
+                    $('#appCommit').text(r.message.commit || '-');
+                    $('#appCommitDate').text(r.message.commit_date || '');
                 }
             }
         });
@@ -360,6 +388,13 @@
         }
         
         $('#testResults').html(html);
+
+        // Vollständiges Log befüllen
+        if (data.full_log) {
+            $('#fullLogContent').text(data.full_log.trim());
+            $('#fullLogSection').show();
+        }
+
         $('#resultsContainer').show();
         
         // Zum Ergebnis scrollen
