@@ -1,279 +1,45 @@
 # -*- coding: utf-8 -*-
 import frappe
-import subprocess
-import socket
-import os
-from frappe import _
+
+from . import diagnostics_core as core
+
+
+def _as_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
 
 
 @frappe.whitelist(allow_guest=True)
 def get_system_info():
-    """Get basic system information"""
-    # Username über bash-Befehl holen
-    returncode, username, stderr = run_command('whoami')
-    if returncode != 0 or not username.strip():
-        username = 'unknown'
-    else:
-        username = username.strip()
-    
-    return {
-        'hostname': socket.gethostname(),
-        'username': username
-    }
+    """Get basic system information."""
+    return core.get_system_info()
 
 
 @frappe.whitelist(allow_guest=True)
-def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests=True, 
-                    run_node_tests=True, run_wkhtml_tests=True):
-    """Run system diagnostics tests"""
-    
-    results = {
-        'tests_passed': 0,
-        'tests_failed': 0,
-        'categories': {}
-    }
-
-    # Aktuelle Site-Domain dynamisch ermitteln
+def run_diagnostics(
+    run_network_tests=True,
+    run_https_tests=True,
+    run_cert_tests=True,
+    run_node_tests=True,
+    run_wkhtml_tests=True,
+):
+    """Run system diagnostics tests using shared diagnostics core."""
     try:
-        site_host = frappe.local.site or socket.gethostname()
+        frappe_site = frappe.local.site
     except AttributeError:
-        site_host = socket.gethostname()
+        frappe_site = None
 
-    # Kategorie 1: Netzwerk & DNS
-    if run_network_tests:
-        network_tests = []
-        network_tests.append(test_ping('GitHub erreichbar', 'github.com'))
-        network_tests.append(test_ping(f'{site_host} erreichbar', site_host))
-        network_tests.append(test_ping('deb.nodesource.com erreichbar', 'deb.nodesource.com'))
-        network_tests.append(test_dns(f'DNS-Auflösung für {site_host}', site_host))
-        
-        results['categories']['1) Netzwerk & DNS Tests'] = {'tests': network_tests}
-    
-    # Kategorie 2: HTTPS / TLS
-    if run_https_tests:
-        https_tests = []
-        https_tests.append(test_https('deb.nodesource.com HTTPS Verbindung', 'https://deb.nodesource.com'))
-        https_tests.append(test_https('GitHub HTTPS Verbindung', 'https://github.com'))
-        https_tests.append(test_https(f'{site_host} HTTPS Verbindung', f'https://{site_host}'))
-        https_tests.append(test_https('fonts.googleapis.com HTTPS Verbindung', 'https://fonts.googleapis.com'))
-        https_tests.append(test_https('fonts.gstatic.com HTTPS Verbindung', 'https://fonts.gstatic.com'))
-        https_tests.append(test_https('www.google.com HTTPS Verbindung (Vergleichstest)', 'https://www.google.com'))
-        
-        results['categories']['2) HTTPS / TLS Tests'] = {'tests': https_tests}
-    
-    # Kategorie 3: Zertifikat Details
-    if run_cert_tests:
-        cert_tests = []
-        cert_tests.append(test_ssl_cert('SSL-Zertifikat mit korrektem SAN', site_host))
-        cert_tests.append(test_ssl_validation('SSL-Zertifikat Validierung erfolgreich', site_host))
-        
-        results['categories']['3) Zertifikat Details'] = {'tests': cert_tests}
-    
-    # Kategorie 4: Node.js (optional)
-    if run_node_tests:
-        node_tests = []
-        node_tests.append(test_node_version('Node.js verfügbar'))
-        
-        results['categories']['4) Node.js Umgebung'] = {'tests': node_tests}
-    
-    # Kategorie 5: wkhtmltopdf
-    if run_wkhtml_tests:
-        wkhtml_tests = []
-        wkhtml_tests.append(test_wkhtmltopdf_version('wkhtmltopdf verfügbar'))
-        wkhtml_tests.append(test_wkhtmltopdf_https('wkhtmltopdf kann HTTPS-Seite zu PDF konvertieren', site_host))
-    
-        results['categories']['5) wkhtmltopdf'] = {'tests': wkhtml_tests}
-    
-    # Zusammenfassung berechnen
-    for category in results['categories'].values():
-        for test in category['tests']:
-            if test['passed']:
-                results['tests_passed'] += 1
-            else:
-                results['tests_failed'] += 1
-    
-    return results
+    site_host = core.resolve_site_host(frappe_site=frappe_site)
 
-
-def run_command(cmd, shell=True):
-    """Run a shell command and return output"""
-    try:
-        result = subprocess.run(
-            cmd,
-            shell=shell,
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        return result.returncode, result.stdout, result.stderr
-    except subprocess.TimeoutExpired:
-        return -1, '', 'Command timed out'
-    except Exception as e:
-        return -1, '', str(e)
-
-
-def test_ping(name, host):
-    """Test if a host is reachable via ping"""
-    if host.endswith('.localhost') or host == 'localhost':
-        return {'name': f'{name} → 127.0.0.1 (lokal)', 'passed': True, 'debug': ''}
-    returncode, stdout, stderr = run_command(f'ping -c 1 -W 2 {host}')
-    passed = returncode == 0
-    debug = stdout + stderr if not passed else ''
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_https(name, url):
-    """Test HTTPS connection to a URL"""
-    from urllib.parse import urlparse
-    host = urlparse(url).hostname or ''
-    if host.endswith('.localhost') or host == 'localhost':
-        return {'name': f'{name} (übersprungen – lokale Dev-Domain)', 'passed': True, 'debug': ''}
-    returncode, stdout, stderr = run_command(f'curl -sS -I {url}')
-    passed = returncode == 0 and ('200' in stdout or '301' in stdout or '302' in stdout or '404' in stdout)
-    
-    debug = ''
-    if not passed:
-        # Verbose output for debugging
-        returncode_v, stdout_v, stderr_v = run_command(f'curl -Iv {url}')
-        debug = stdout_v + stderr_v
-        
-        if 'self-signed certificate' in debug:
-            debug += f"\n\nHinweis: Führen Sie './inspect-ca.sh {url.replace('https://', '')} root-ca.crt' aus."
-    
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_dns(name, host):
-    """Test DNS resolution against own IP"""
-    # Ermittle die eigene IP-Adresse (ursprünglich war es 10.0.2.126)
-    import socket
-    
-    # Versuche eigene IP zu ermitteln
-    own_ip = ''
-    try:
-        # Methode 1: Socket-Verbindung zu externem Host
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        own_ip = s.getsockname()[0]
-        s.close()
-    except:
-        # Methode 2: hostname -I
-        returncode, stdout, stderr = run_command('hostname -I')
-        if returncode == 0 and stdout.strip():
-            own_ip = stdout.strip().split()[0]
-    
-    if not own_ip:
-        # Methode 3: ip addr show
-        returncode, stdout, stderr = run_command('ip addr show')
-        if returncode == 0:
-            import re
-            ips = re.findall(r'inet (\d+\.\d+\.\d+\.\d+)', stdout)
-            for ip in ips:
-                if ip != '127.0.0.1':
-                    own_ip = ip
-                    break
-    
-    # .localhost-Domains lösen sich per Definition zu 127.0.0.1 auf
-    if host.endswith('.localhost') or host == 'localhost':
-        return {'name': f'{name} → 127.0.0.1 (lokal)', 'passed': True, 'debug': ''}
-
-    # DNS-Auflösung durchführen
-    returncode, stdout, stderr = run_command(f'getent hosts {host}')
-    
-    if returncode != 0 or not stdout.strip():
-        debug = f"Erwartete IP (eigene): {own_ip}\nDNS-Ausgabe: {stdout + stderr}\n\nFehler: {host} konnte nicht aufgelöst werden"
-        return {'name': name, 'passed': False, 'debug': debug}
-    
-    resolved_ip = stdout.strip().split()[0] if stdout.strip() else ''
-    
-    if own_ip and resolved_ip == own_ip:
-        return {'name': f'{name} → {own_ip}', 'passed': True, 'debug': ''}
-    else:
-        debug = f"Erwartete IP (eigene): {own_ip}\nAufgelöste IP: {resolved_ip}\n\nVollständige DNS-Ausgabe:\n{stdout}"
-        return {'name': name, 'passed': False, 'debug': debug}
-
-
-def test_ssl_cert(name, host):
-    """Test SSL certificate SAN"""
-    if host.endswith('.localhost') or host == 'localhost':
-        return {'name': f'{name} (übersprungen – lokale Dev-Domain)', 'passed': True, 'debug': ''}
-    cmd = f'echo | openssl s_client -connect {host}:443 -servername {host} 2>&1'
-    returncode, stdout, stderr = run_command(cmd)
-    
-    passed = '*.az-it.systems' in stdout
-    debug = stdout if not passed else ''
-    
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_ssl_validation(name, host):
-    """Test SSL certificate validation"""
-    if host.endswith('.localhost') or host == 'localhost':
-        return {'name': f'{name} (übersprungen – lokale Dev-Domain)', 'passed': True, 'debug': ''}
-    cmd = f'echo | openssl s_client -connect {host}:443 -servername {host} 2>&1'
-    returncode, stdout, stderr = run_command(cmd)
-    
-    passed = 'Verify return code: 0 (ok)' in stdout
-    debug = stdout if not passed else ''
-    
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_node_version(name):
-    """Test Node.js version"""
-    returncode, stdout, stderr = run_command('node -v')
-    passed = returncode == 0 and stdout.strip().startswith('v')
-    debug = stderr if not passed else ''
-    
-    if passed:
-        name += f': {stdout.strip()}'
-    
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_wkhtmltopdf_version(name):
-    """Test wkhtmltopdf version"""
-    returncode, stdout, stderr = run_command('wkhtmltopdf --version')
-    passed = returncode == 0 and 'wkhtmltopdf' in (stdout + stderr)
-    
-    REQUIRED_VERSION = '0.12.6.1 (with patched qt)'
-    if passed:
-        passed = REQUIRED_VERSION in (stdout + stderr)
-        if passed:
-            name += f': Version {REQUIRED_VERSION} (empfohlen)'
-        else:
-            # Extract version
-            import re
-            version_match = re.search(r'(\d+\.\d+[\d.]*(?: \(with patched qt\))?)', stdout + stderr)
-            if version_match:
-                name += f': {version_match.group(1)} (nicht empfohlen, erwartet: {REQUIRED_VERSION})'
-    
-    debug = stderr if not passed else ''
-    return {'name': name, 'passed': passed, 'debug': debug}
-
-
-def test_wkhtmltopdf_https(name, host):
-    """Test wkhtmltopdf HTTP/HTTPS conversion"""
-    test_file = '/tmp/wkhtml_test.pdf'
-
-    # Lokale Umgebung erkennen: .localhost-Domains und "localhost" verwenden HTTP
-    is_local = host.endswith('.localhost') or host == 'localhost'
-    scheme = 'http' if is_local else 'https'
-
-    # Testname an verwendetes Schema anpassen
-    name = name.replace('HTTPS', scheme.upper())
-
-    # Clean up old test file
-    if os.path.exists(test_file):
-        os.remove(test_file)
-
-    returncode, stdout, stderr = run_command(f'wkhtmltopdf {scheme}://{host} {test_file}')
-
-    passed = os.path.exists(test_file) and os.path.getsize(test_file) > 0
-    debug = stdout + stderr if not passed else ''
-
-    # Clean up
-    if os.path.exists(test_file):
-        os.remove(test_file)
-
-    return {'name': name, 'passed': passed, 'debug': debug}
+    return core.run_diagnostics(
+        site_host=site_host,
+        run_network_tests=_as_bool(run_network_tests),
+        run_https_tests=_as_bool(run_https_tests),
+        run_cert_tests=_as_bool(run_cert_tests),
+        run_node_tests=_as_bool(run_node_tests),
+        run_wkhtml_tests=_as_bool(run_wkhtml_tests),
+        run_sudo_node_test=False,
+    )
