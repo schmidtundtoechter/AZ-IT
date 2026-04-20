@@ -14,6 +14,9 @@ NC='\033[0m' # No Color
 # Standard-Konfiguration
 VERBOSE=0
 SUDO_TEST=0
+SERVER_NAME=""
+SERVER_HOST=""
+SYSTEM_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 
 # Test-Ergebnisse
 TESTS_PASSED=0
@@ -24,19 +27,22 @@ FAILED_TESTS=()
 # Hilfsfunktion: Usage
 # ------------------------------------------------------------
 usage() {
+  local exit_code="${1:-0}"
   echo "Usage: $0 [OPTIONS]"
+  echo "       $0 [OPTIONS] <server-name>"
   echo
   echo "Optionen:"
   echo "  -v, --verbose    Zeige Debug-Ausgaben an"
   echo "  -s, --sudo       Führe sudo Node.js-Tests durch"
   echo "  -h, --help       Zeige diese Hilfe an"
+  echo "  <server-name>    Pflichtargument, z. B. erptest"
   echo
   echo "Beispiele:"
-  echo "  $0               # Normale Ausführung ohne Debug-Ausgaben"
-  echo "  $0 -v            # Mit Debug-Ausgaben"
-  echo "  $0 -s            # Mit sudo Node.js-Tests"
-  echo "  $0 -v -s         # Mit Debug-Ausgaben und sudo-Tests"
-  exit 0
+  echo "  $0 erptest       # Normale Ausführung"
+  echo "  $0 -v erptest    # Mit Debug-Ausgaben"
+  echo "  $0 -s erptest    # Mit sudo Node.js-Tests"
+  echo "  $0 -v -s erptest # Mit Debug-Ausgaben und sudo-Tests"
+  exit "$exit_code"
 }
 
 # ------------------------------------------------------------
@@ -53,14 +59,30 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      usage
+      usage 0
+      ;;
+    -*)
+      echo "Unbekannte Option: $1"
+      usage 1
       ;;
     *)
-      echo "Unbekannte Option: $1"
-      usage
+      if [ -z "$SERVER_NAME" ]; then
+        SERVER_NAME="$1"
+      else
+        echo "Zu viele Positionsargumente: $1"
+        usage 1
+      fi
+      shift
       ;;
   esac
 done
+
+if [ -z "$SERVER_NAME" ]; then
+  echo "Fehler: <server-name> ist erforderlich (z. B. erptest)."
+  usage 1
+fi
+
+SERVER_HOST="${SERVER_NAME}.az-it.systems"
 
 echo -e "${BOLD}============================================================${NC}"
 echo -e "${BOLD} SYSTEMDIAGNOSE – PDF / TLS / WKHTMLTOPDF / NODE${NC}"
@@ -113,12 +135,12 @@ else
   show_debug "$(ping -c 1 github.com 2>&1)"
 fi
 
-# Test: erptest.az-it.systems erreichbar
-if ping -c 1 -W 2 erptest.az-it.systems >/dev/null 2>&1; then
-  test_pass "erptest.az-it.systems erreichbar"
+# Test: Server erreichbar
+if ping -c 1 -W 2 "$SERVER_HOST" >/dev/null 2>&1; then
+  test_pass "$SERVER_HOST erreichbar"
 else
-  test_fail "erptest.az-it.systems nicht erreichbar"
-  show_debug "$(ping -c 1 erptest.az-it.systems 2>&1)"
+  test_fail "$SERVER_HOST nicht erreichbar"
+  show_debug "$(ping -c 1 "$SERVER_HOST" 2>&1)"
 fi
 
 # Test: deb.nodesource.com erreichbar
@@ -136,17 +158,17 @@ if [ -z "$OWN_IP" ]; then
   OWN_IP=$(ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -1)
 fi
 
-DNS_OUTPUT=$(getent hosts erptest.az-it.systems 2>&1)
+DNS_OUTPUT=$(getent hosts "$SERVER_HOST" 2>&1)
 RESOLVED_IP=$(echo "$DNS_OUTPUT" | awk '{print $1}')
 
 if echo "$DNS_OUTPUT" | grep -q "$OWN_IP"; then
-  test_pass "DNS-Auflösung für erptest.az-it.systems → $OWN_IP"
+  test_pass "DNS-Auflösung für $SERVER_HOST → $OWN_IP"
 else
   if [ -z "$RESOLVED_IP" ]; then
-    test_fail "DNS-Auflösung fehlgeschlagen: erptest.az-it.systems konnte nicht aufgelöst werden"
+    test_fail "DNS-Auflösung fehlgeschlagen: $SERVER_HOST konnte nicht aufgelöst werden"
     show_debug "Erwartete IP: $OWN_IP\nDNS-Ausgabe: $DNS_OUTPUT"
   else
-    test_fail "DNS-Auflösung fehlgeschlagen: erptest.az-it.systems löst auf falsche IP auf"
+    test_fail "DNS-Auflösung fehlgeschlagen: $SERVER_HOST löst auf falsche IP auf"
     show_debug "Erwartete IP (eigene): $OWN_IP\nAufgelöste IP: $RESOLVED_IP\nVollständige DNS-Ausgabe:\n$DNS_OUTPUT"
   fi
 fi
@@ -192,21 +214,21 @@ else
   fi
 fi
 
-# Test: erptest HTTPS
-CURL_OUTPUT=$(curl -sS -I https://erptest.az-it.systems 2>&1)
+# Test: Server HTTPS
+CURL_OUTPUT=$(curl -sS -I "https://$SERVER_HOST" 2>&1)
 if echo "$CURL_OUTPUT" | grep -q "HTTP.*200\|HTTP.*301\|HTTP.*302"; then
-  test_pass "erptest.az-it.systems HTTPS Verbindung"
+  test_pass "$SERVER_HOST HTTPS Verbindung"
 else
-  CURL_VERBOSE=$(curl -Iv https://erptest.az-it.systems 2>&1)
+  CURL_VERBOSE=$(curl -Iv "https://$SERVER_HOST" 2>&1)
   if echo "$CURL_VERBOSE" | grep -q "self-signed certificate"; then
-    test_fail "erptest.az-it.systems HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
-    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
+    test_fail "$SERVER_HOST HTTPS fehlgeschlagen: Root CA Problem (selbst-signiertes Zertifikat)"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh $SERVER_HOST ${SERVER_NAME}-root-ca.crt' aus, um das Root-Zertifikat zu analysieren und zu installieren."
   elif echo "$CURL_VERBOSE" | grep -qi "certificate.*name\|hostname.*mismatch\|subject alternative name"; then
-    test_fail "erptest.az-it.systems HTTPS fehlgeschlagen: Hostname-Mismatch im Zertifikat"
-    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Zertifikat zu analysieren."
+    test_fail "$SERVER_HOST HTTPS fehlgeschlagen: Hostname-Mismatch im Zertifikat"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh $SERVER_HOST ${SERVER_NAME}-root-ca.crt' aus, um das Zertifikat zu analysieren."
   else
-    test_fail "erptest.az-it.systems HTTPS fehlgeschlagen"
-    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh erptest.az-it.systems erptest-root-ca.crt' aus, um das Zertifikat zu analysieren."
+    test_fail "$SERVER_HOST HTTPS fehlgeschlagen"
+    show_debug "$CURL_VERBOSE\n\nHinweis: Führen Sie './inspect-ca.sh $SERVER_HOST ${SERVER_NAME}-root-ca.crt' aus, um das Zertifikat zu analysieren."
   fi
 fi
 
@@ -256,13 +278,138 @@ else
   show_debug "$CURL_VERBOSE"
 fi
 
+# Info: Aktive Python-CA-Bundles anzeigen
+PYTHON_CA_INFO=$(cd /home/frappe-user/frappe-bench && ./env/bin/python -c "
+import certifi
+import os
+import ssl
+print('certifi: ' + certifi.where())
+print('REQUESTS_CA_BUNDLE: ' + os.environ.get('REQUESTS_CA_BUNDLE', '(nicht gesetzt)'))
+print('SSL_CERT_FILE: ' + os.environ.get('SSL_CERT_FILE', '(nicht gesetzt)'))
+print('OpenSSL: ' + ssl.OPENSSL_VERSION)
+" 2>&1)
+test_pass "Python CA-Bundle Info ermittelt"
+show_debug "$PYTHON_CA_INFO"
+
+# Test: Python requests für GitHub API (default certifi = realer install-app Pfad)
+PYTHON_REQUESTS_OUTPUT=$(cd /home/frappe-user/frappe-bench && ./env/bin/python -c "
+import requests
+import sys
+try:
+    requests.head('https://api.github.com', timeout=5)
+    sys.exit(0)
+except requests.exceptions.SSLError as e:
+    print('SSL Error: ' + str(e), file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print('Error: ' + str(e), file=sys.stderr)
+    sys.exit(2)
+" 2>&1)
+PYTHON_REQUESTS_EXIT=$?
+
+if [ $PYTHON_REQUESTS_EXIT -eq 0 ]; then
+  test_pass "Python requests GitHub HTTPS (Default certifi, für Frappe)"
+else
+  if echo "$PYTHON_REQUESTS_OUTPUT" | grep -qi "SSL\|CERTIFICATE_VERIFY_FAILED"; then
+    test_fail "Python requests GitHub HTTPS SSL-Fehler (Default certifi)"
+    show_debug "$PYTHON_REQUESTS_OUTPUT\n\nAktiver certifi-Pfad:\n$PYTHON_CA_INFO\n\nHinweis: Vergleich mit System-CA siehe nächsten Test."
+  else
+    test_fail "Python requests GitHub HTTPS fehlgeschlagen (Default certifi)"
+    show_debug "$PYTHON_REQUESTS_OUTPUT"
+  fi
+fi
+
+# Vergleichstest: Python requests für GitHub API mit System-CA-Bundle
+PYTHON_REQUESTS_SYSTEM_CA=$(cd /home/frappe-user/frappe-bench && REQUESTS_CA_BUNDLE="$SYSTEM_CA_BUNDLE" ./env/bin/python -c "
+import requests
+import sys
+try:
+    requests.head('https://api.github.com', timeout=5)
+    sys.exit(0)
+except requests.exceptions.SSLError as e:
+    print('SSL Error: ' + str(e), file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print('Error: ' + str(e), file=sys.stderr)
+    sys.exit(2)
+" 2>&1)
+PYTHON_REQUESTS_SYSTEM_CA_EXIT=$?
+
+if [ $PYTHON_REQUESTS_SYSTEM_CA_EXIT -eq 0 ]; then
+  test_pass "Python requests GitHub HTTPS (System-CA Vergleich)"
+else
+  if echo "$PYTHON_REQUESTS_SYSTEM_CA" | grep -qi "SSL\|CERTIFICATE_VERIFY_FAILED"; then
+    test_fail "Python requests GitHub HTTPS SSL-Fehler (System-CA Vergleich)"
+    show_debug "$PYTHON_REQUESTS_SYSTEM_CA\n\nVerwendetes CA-Bundle: $SYSTEM_CA_BUNDLE"
+  else
+    test_fail "Python requests GitHub HTTPS fehlgeschlagen (System-CA Vergleich)"
+    show_debug "$PYTHON_REQUESTS_SYSTEM_CA"
+  fi
+fi
+
+# Test: Python requests für api.github.com/repos/frappe/helpdesk (default certifi)
+PYTHON_REQUESTS_FRAPPE=$(cd /home/frappe-user/frappe-bench && ./env/bin/python -c "
+import requests
+import sys
+try:
+    requests.head('https://api.github.com/repos/frappe/helpdesk', timeout=5)
+    sys.exit(0)
+except requests.exceptions.SSLError as e:
+    print('SSL Error: ' + str(e), file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print('Error: ' + str(e), file=sys.stderr)
+    sys.exit(2)
+" 2>&1)
+PYTHON_REQUESTS_FRAPPE_EXIT=$?
+
+if [ $PYTHON_REQUESTS_FRAPPE_EXIT -eq 0 ]; then
+  test_pass "Python requests Frappe-Repos-API (Default certifi, bench install-app Test)"
+else
+  if echo "$PYTHON_REQUESTS_FRAPPE" | grep -qi "SSL\|CERTIFICATE_VERIFY_FAILED"; then
+    test_fail "Python requests Frappe-Repos-API SSL-Fehler (Default certifi)"
+    show_debug "$PYTHON_REQUESTS_FRAPPE\n\n⚠️ Das ist der install-app-relevante Pfad (certifi).\nAktiver certifi-Pfad:\n$PYTHON_CA_INFO"
+  else
+    test_fail "Python requests Frappe-Repos-API fehlgeschlagen (Default certifi)"
+    show_debug "$PYTHON_REQUESTS_FRAPPE"
+  fi
+fi
+
+# Vergleichstest: Python requests für Frappe-Repos-API mit System-CA-Bundle
+PYTHON_REQUESTS_FRAPPE_SYSTEM_CA=$(cd /home/frappe-user/frappe-bench && REQUESTS_CA_BUNDLE="$SYSTEM_CA_BUNDLE" ./env/bin/python -c "
+import requests
+import sys
+try:
+    requests.head('https://api.github.com/repos/frappe/helpdesk', timeout=5)
+    sys.exit(0)
+except requests.exceptions.SSLError as e:
+    print('SSL Error: ' + str(e), file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print('Error: ' + str(e), file=sys.stderr)
+    sys.exit(2)
+" 2>&1)
+PYTHON_REQUESTS_FRAPPE_SYSTEM_CA_EXIT=$?
+
+if [ $PYTHON_REQUESTS_FRAPPE_SYSTEM_CA_EXIT -eq 0 ]; then
+  test_pass "Python requests Frappe-Repos-API (System-CA Vergleich)"
+else
+  if echo "$PYTHON_REQUESTS_FRAPPE_SYSTEM_CA" | grep -qi "SSL\|CERTIFICATE_VERIFY_FAILED"; then
+    test_fail "Python requests Frappe-Repos-API SSL-Fehler (System-CA Vergleich)"
+    show_debug "$PYTHON_REQUESTS_FRAPPE_SYSTEM_CA\n\nVerwendetes CA-Bundle: $SYSTEM_CA_BUNDLE"
+  else
+    test_fail "Python requests Frappe-Repos-API fehlgeschlagen (System-CA Vergleich)"
+    show_debug "$PYTHON_REQUESTS_FRAPPE_SYSTEM_CA"
+  fi
+fi
+
 # ------------------------------------------------------------
 # 3. HTTPS / TLS – OpenSSL (SAN / Zertifikat)
 # ------------------------------------------------------------
 test_header "3) Zertifikat Details"
 
 # Test: SSL-Zertifikat mit korrektem SAN
-OPENSSL_OUTPUT=$(echo | openssl s_client -connect erptest.az-it.systems:443 -servername erptest.az-it.systems 2>&1)
+OPENSSL_OUTPUT=$(echo | openssl s_client -connect "$SERVER_HOST":443 -servername "$SERVER_HOST" 2>&1)
 if echo "$OPENSSL_OUTPUT" | grep -q "*.az-it.systems"; then
   test_pass "SSL-Zertifikat mit korrektem SAN"
 else
@@ -340,7 +487,7 @@ test_header "6) wkhtmltopdf HTTPS Tests"
 
 # Test: wkhtmltopdf kann HTTPS verarbeiten
 WKHTML_TEST="/tmp/wkhtml_https_test_$$.pdf"
-WKHTML_OUTPUT=$(wkhtmltopdf https://erptest.az-it.systems "$WKHTML_TEST" 2>&1)
+WKHTML_OUTPUT=$(wkhtmltopdf "https://$SERVER_HOST" "$WKHTML_TEST" 2>&1)
 if [ -f "$WKHTML_TEST" ] && [ -s "$WKHTML_TEST" ]; then
   test_pass "wkhtmltopdf kann HTTPS-Seite zu PDF konvertieren"
   rm -f "$WKHTML_TEST"

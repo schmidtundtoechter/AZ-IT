@@ -3,6 +3,8 @@ import frappe
 import subprocess
 import socket
 import os
+import certifi
+import ssl
 from frappe import _
 
 
@@ -58,6 +60,13 @@ def run_diagnostics(run_network_tests=True, run_https_tests=True, run_cert_tests
         https_tests.append(test_https('fonts.googleapis.com HTTPS Verbindung', 'https://fonts.googleapis.com'))
         https_tests.append(test_https('fonts.gstatic.com HTTPS Verbindung', 'https://fonts.gstatic.com'))
         https_tests.append(test_https('www.google.com HTTPS Verbindung (Vergleichstest)', 'https://www.google.com'))
+
+        # Python requests Tests (Default certifi vs. System-CA Vergleich)
+        https_tests.append(test_python_ca_bundle_info('Python CA-Bundle Info (certifi vs Umgebungsvariablen)'))
+        https_tests.append(test_python_requests_github('Python requests GitHub HTTPS (Default certifi, für Frappe)'))
+        https_tests.append(test_python_requests_github_system_ca('Python requests GitHub HTTPS (System-CA Vergleich)'))
+        https_tests.append(test_python_requests_frappe_api('Python requests Frappe-Repos-API (Default certifi, bench install-app Test)'))
+        https_tests.append(test_python_requests_frappe_api_system_ca('Python requests Frappe-Repos-API (System-CA Vergleich)'))
         
         results['categories']['2) HTTPS / TLS Tests'] = {'tests': https_tests}
     
@@ -277,3 +286,80 @@ def test_wkhtmltopdf_https(name, host):
         os.remove(test_file)
 
     return {'name': name, 'passed': passed, 'debug': debug}
+
+
+def test_python_requests_github(name):
+    """Test Python requests GitHub HTTPS connection (uses certifi, not system CA store)"""
+    try:
+        import requests
+        requests.head('https://api.github.com', timeout=5)
+        return {'name': name, 'passed': True, 'debug': ''}
+    except Exception as e:
+        error_msg = str(e)
+        debug = (
+            f"Python requests Error: {error_msg}\n\n"
+            f"certifi: {certifi.where()}\n"
+            f"REQUESTS_CA_BUNDLE: {os.environ.get('REQUESTS_CA_BUNDLE', '(nicht gesetzt)')}\n"
+            f"SSL_CERT_FILE: {os.environ.get('SSL_CERT_FILE', '(nicht gesetzt)')}\n\n"
+            "Hinweis: Das ist der realistische install-app Pfad mit Default-certifi."
+        )
+        return {'name': name, 'passed': False, 'debug': debug}
+
+
+def test_python_requests_frappe_api(name):
+    """Test Python requests for Frappe API call (exact call from install-app)"""
+    try:
+        import requests
+        requests.head('https://api.github.com/repos/frappe/helpdesk', timeout=5)
+        return {'name': name, 'passed': True, 'debug': ''}
+    except Exception as e:
+        error_msg = str(e)
+        debug = (
+            f"Python requests Error: {error_msg}\n\n"
+            f"certifi: {certifi.where()}\n"
+            f"REQUESTS_CA_BUNDLE: {os.environ.get('REQUESTS_CA_BUNDLE', '(nicht gesetzt)')}\n"
+            f"SSL_CERT_FILE: {os.environ.get('SSL_CERT_FILE', '(nicht gesetzt)')}\n\n"
+            "⚠️  DAS IST DER ROOT-CAUSE des 'bench install-app custom_helpdesk' SSL-Fehlers "
+            "falls der System-CA-Vergleich parallel erfolgreich ist."
+        )
+        return {'name': name, 'passed': False, 'debug': debug}
+
+
+def test_python_requests_github_system_ca(name):
+    """Test Python requests GitHub HTTPS with explicit system CA bundle for comparison"""
+    return _test_python_requests_with_system_ca(name, 'https://api.github.com')
+
+
+def test_python_requests_frappe_api_system_ca(name):
+    """Test Python requests Frappe API with explicit system CA bundle for comparison"""
+    return _test_python_requests_with_system_ca(name, 'https://api.github.com/repos/frappe/helpdesk')
+
+
+def test_python_ca_bundle_info(name):
+    """Report active CA bundle sources used by Python requests"""
+    debug = (
+        f"certifi: {certifi.where()}\n"
+        f"REQUESTS_CA_BUNDLE: {os.environ.get('REQUESTS_CA_BUNDLE', '(nicht gesetzt)')}\n"
+        f"SSL_CERT_FILE: {os.environ.get('SSL_CERT_FILE', '(nicht gesetzt)')}\n"
+        f"OpenSSL: {ssl.OPENSSL_VERSION}"
+    )
+    return {'name': name, 'passed': True, 'debug': debug}
+
+
+def _test_python_requests_with_system_ca(name, url):
+    """Run requests test with explicit system CA bundle to compare against certifi path"""
+    try:
+        import requests
+        system_ca_bundle = '/etc/ssl/certs/ca-certificates.crt'
+        requests.head(url, timeout=5, verify=system_ca_bundle)
+        debug = f"Verwendetes CA-Bundle: {system_ca_bundle}"
+        return {'name': name, 'passed': True, 'debug': debug}
+    except Exception as e:
+        system_ca_bundle = '/etc/ssl/certs/ca-certificates.crt'
+        error_msg = str(e)
+        debug = (
+            f"Python requests Error: {error_msg}\n\n"
+            f"Verwendetes CA-Bundle: {system_ca_bundle}\n"
+            "System-CA-Vergleich fehlgeschlagen. Ursache ist vermutlich nicht nur certifi."
+        )
+        return {'name': name, 'passed': False, 'debug': debug}
