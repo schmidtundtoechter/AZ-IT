@@ -26,9 +26,9 @@
   <Connection MaxConcurrentRequests="2"/>
 
   <Parameters>
-    <Parameter Name="ERPNextURL"        Type="String"  Parent="General Configuration" Editor="String"  Title="ERPNext Base URL:"      Default="https://erp.yourcompany.de"/>
-    <Parameter Name="APIToken"          Type="String"  Parent="General Configuration" Editor="String"  Title="API Token (key:secret):"/>
-    <Parameter Name="ReportCallEnabled" Type="Boolean" Editor="String"  Title="Enable Call Journaling"  Default="False"/>
+    <Parameter Name="ERPNextURL"        Type="String"  Editor="String"   Title="ERPNext Base URL:"      Default="https://erp.yourcompany.de"/>
+    <Parameter Name="APIToken"          Type="String"  Editor="String"   Title="API Token (key:secret):"/>
+    <Parameter Name="ReportCallEnabled" Type="Boolean" Editor="String"   Title="Enable Call Journaling"  Default="False"/>
   </Parameters>
 
   <!--
