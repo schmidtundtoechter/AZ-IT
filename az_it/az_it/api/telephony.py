@@ -156,6 +156,8 @@ def log_call(
 			"sender": agent_email,
 			"communication_date": now_datetime(),
 			"status": "Linked",
+			"custom_call_type": call_type,
+			"custom_duration_seconds": duration_seconds,
 		}
 	)
 	doc.insert(ignore_permissions=True)

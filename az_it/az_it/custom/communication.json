@@ -1,0 +1,25 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Communication",
+   "fieldname": "custom_call_type",
+   "fieldtype": "Data",
+   "label": "Call Type",
+   "insert_after": "communication_medium",
+   "read_only": 1
+  },
+  {
+   "dt": "Communication",
+   "fieldname": "custom_duration_seconds",
+   "fieldtype": "Int",
+   "label": "Duration (seconds)",
+   "insert_after": "custom_call_type",
+   "read_only": 1
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Communication",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

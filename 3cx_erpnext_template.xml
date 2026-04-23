@@ -14,13 +14,7 @@
      In 3CX Admin > Phonebook > Import from URL:
      https://<ERPNextURL>/api/resource/Contact?fields=["name","full_name","company_name","phone_nos","email_ids"]
 -->
-<Crm
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  Country="DE"
-  Name="ERPNext"
-  Version="1"
-  SupportsEmojis="false">
+<Crm Country="DE" Name="ERPNext" Version="1" SupportsEmojis="false">
 
   <Number Prefix="AsIs" MaxLength="[MaxLength]"/>
   <Connection MaxConcurrentRequests="2"/>
@@ -38,7 +32,7 @@
     query parameter (simpler for 3CX XML templates).
     Alternatively, pass as header: Authorization: token [APIToken]
   -->
-  <Authentication Type="No Authentication"/>
+  <Authentication Type="No"/>
 
   <Scenarios>
 
