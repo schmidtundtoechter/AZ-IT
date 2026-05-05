@@ -10,7 +10,11 @@
   <Authentication Type="No" />
   <Scenarios>
     <Scenario Id="" Type="REST" EntityId="" EntityOrder="">
-      <Request SkipIf="" Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.lookup_contact_by_number?number=[Number]" MessagePasses="0" Message="" RequestContentType="" RequestEncoding="UrlEncoded" RequestType="Get" ResponseType="Json" />
+      <Request SkipIf="" Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.lookup_contact_by_number?number=[Number]" MessagePasses="0" Message="" RequestContentType="" RequestEncoding="UrlEncoded" RequestType="Get" ResponseType="Json">
+        <Headers>
+          <Value Key="Authorization" Passes="0" Type="String">token [APIToken]</Value>
+        </Headers>
+      </Request>
       <Rules>
         <Rule Type="Any" Ethalon="">message.contact_id</Rule>
       </Rules>
