@@ -53,11 +53,11 @@ def _lookup_contact(normalized):
 
 	return {
 		"contact_id": contact_id,
-		"first_name": full_name or row.get("company_name", ""),
-		"company_name": row.get("company_name", ""),
+		"first_name": full_name or row.get("company_name") or "",
+		"company_name": row.get("company_name") or "",
 		"email": email_row or "",
-		"phone_business": phone_business,
-		"phone_mobile": phone_mobile,
+		"phone_business": phone_business or "",
+		"phone_mobile": phone_mobile or "",
 		"entity_type": "Contact",
 	}
 
@@ -83,11 +83,11 @@ def _lookup_lead(normalized):
 	row = result[0]
 	return {
 		"contact_id": row["name"],
-		"first_name": row.get("lead_name", ""),
-		"company_name": row.get("company_name", ""),
-		"email": row.get("email_id", ""),
-		"phone_business": row.get("phone", ""),
-		"phone_mobile": row.get("mobile_no", ""),
+		"first_name": row.get("lead_name") or "",
+		"company_name": row.get("company_name") or "",
+		"email": row.get("email_id") or "",
+		"phone_business": row.get("phone") or "",
+		"phone_mobile": row.get("mobile_no") or "",
 		"entity_type": "Lead",
 	}
 
