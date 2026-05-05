@@ -3,8 +3,8 @@
   <Number Prefix="AsIs" MaxLength="15" />
   <Connection MaxConcurrentRequests="2" />
   <Parameters>
-    <Parameter Name="ERPNextURL" Type="String" Parent="" Editor="String" Title="ERPNext Base URL:" Validation="" Default="https://erp.yourcompany.de" ListValues="" RequestUrl="" RequestUrlParameters="" ResponseScenario="" />
-    <Parameter Name="APIToken" Type="String" Parent="" Editor="String" Title="API Token (key:secret):" Validation="" Default="" ListValues="" RequestUrl="" RequestUrlParameters="" ResponseScenario="" />
+    <Parameter Name="ERPNextURL" Type="String" Parent="General Configuration" Editor="String" Title="ERPNext Base URL:" Validation="" Default="https://erp.yourcompany.de" ListValues="" RequestUrl="" RequestUrlParameters="" ResponseScenario="" />
+    <Parameter Name="APIToken" Type="String" Parent="General Configuration" Editor="String" Title="API Token (key:secret):" Validation="" Default="" ListValues="" RequestUrl="" RequestUrlParameters="" ResponseScenario="" />
     <Parameter Name="ReportCallEnabled" Type="Boolean" Parent="" Editor="String" Title="Enable Call Journaling" Validation="" Default="False" ListValues="" RequestUrl="" RequestUrlParameters="" ResponseScenario="" />
   </Parameters>
   <Authentication Type="No" />
