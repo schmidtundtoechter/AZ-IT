@@ -1,45 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--
-  3CX CRM Integration Template for ERPNext / az_it
-  ===================================================
-  Setup instructions:
-  1. In ERPNext: Settings > Integrations > API Access
-     - Create a dedicated user (e.g. 3cx@yourcompany.de)
-     - Generate API Key + Secret for that user
-  2. In 3CX Admin Panel: CRM Integration > Upload this file
-  3. Fill in the parameters:
-     - ERPNextURL : your ERPNext base URL, e.g. https://erp.yourcompany.de
-     - APIToken   : <api_key>:<api_secret>  (the ERPNext token format)
-  4. Contact phonebook sync (optional):
-     In 3CX Admin > Phonebook > Import from URL:
-     https://<ERPNextURL>/api/resource/Contact?fields=["name","full_name","company_name","phone_nos","email_ids"]
--->
 <Crm Country="DE" Name="ERPNext" Version="1" SupportsEmojis="false">
-
-  <Number Prefix="AsIs" MaxLength="[MaxLength]"/>
+  <Number Prefix="AsIs" MaxLength="15"/>
   <Connection MaxConcurrentRequests="2"/>
-
   <Parameters>
-    <Parameter Name="ERPNextURL"        Type="String"  Editor="String"   Title="ERPNext Base URL:"      Default="https://erp.yourcompany.de"/>
-    <Parameter Name="APIToken"          Type="String"  Editor="String"   Title="API Token (key:secret):"/>
-    <Parameter Name="ReportCallEnabled" Type="Boolean" Editor="Boolean"  Title="Enable Call Journaling"  Default="false"/>
+    <Parameter Name="ERPNextURL"        Type="String"  Editor="String"  Title="ERPNext Base URL:"     Default="https://erp.yourcompany.de"/>
+    <Parameter Name="APIToken"          Type="String"  Editor="String"  Title="API Token (key:secret):"/>
+    <Parameter Name="ReportCallEnabled" Type="Boolean" Editor="Boolean" Title="Enable Call Journaling" Default="false"/>
   </Parameters>
-
-  <!--
-    Authentication: ERPNext uses "Authorization: token key:secret"
-    We encode the token in the Basic auth value field; the actual header
-    is set via the APIToken parameter embedded in the request URL as a
-    query parameter (simpler for 3CX XML templates).
-    Alternatively, pass as header: Authorization: token [APIToken]
-  -->
   <Authentication Type="No"/>
-
   <Scenarios>
-
-    <!-- ================================================================
-         SCENARIO 1 (default, Id=""): Lookup contact by phone number
-         Called when a call comes in or goes out.
-         ================================================================ -->
     <Scenario Id="" Type="REST">
       <Request
         Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.lookup_contact_by_number?number=[Number]"
@@ -54,36 +23,31 @@
         <Rule Type="Any">message.contact_id</Rule>
       </Rules>
       <Variables>
-        <Variable Name="ContactID"   Path="message.contact_id">   <Filter/> </Variable>
-        <Variable Name="FirstName"   Path="message.first_name">   <Filter/> </Variable>
-        <Variable Name="CompanyName" Path="message.company_name"> <Filter/> </Variable>
-        <Variable Name="Email"       Path="message.email">        <Filter/> </Variable>
-        <Variable Name="PhoneBusiness" Path="message.phone_business"> <Filter/> </Variable>
-        <Variable Name="PhoneMobile"   Path="message.phone_mobile">   <Filter/> </Variable>
-        <Variable Name="EntityType"    Path="message.entity_type">    <Filter/> </Variable>
+        <Variable Name="ContactID"     Path="message.contact_id">    <Filter/></Variable>
+        <Variable Name="FirstName"     Path="message.first_name">    <Filter/></Variable>
+        <Variable Name="CompanyName"   Path="message.company_name">  <Filter/></Variable>
+        <Variable Name="Email"         Path="message.email">         <Filter/></Variable>
+        <Variable Name="PhoneBusiness" Path="message.phone_business"><Filter/></Variable>
+        <Variable Name="PhoneMobile"   Path="message.phone_mobile">  <Filter/></Variable>
+        <Variable Name="EntityType"    Path="message.entity_type">   <Filter/></Variable>
       </Variables>
       <Outputs AllowEmpty="false">
-        <Output Type="ContactID"   Passes="0" Value="[ContactID]"/>
-        <Output Type="FirstName"   Passes="0" Value="[FirstName]"/>
-        <Output Type="CompanyName" Passes="0" Value="[CompanyName]"/>
-        <Output Type="Email"       Passes="0" Value="[Email]"/>
-        <Output Type="PhoneBusiness"  Passes="0" Value="[PhoneBusiness]"/>
-        <Output Type="PhoneMobile"    Passes="0" Value="[PhoneMobile]"/>
-        <Output Type="ContactUrl"  Passes="0" Value="[ERPNextURL]/[EntityType]/[ContactID]"/>
-        <Output Type="EntityId"    Passes="0" Value="[ContactID]"/>
-        <Output Type="EntityType"  Passes="0" Value="[EntityType]"/>
+        <Output Type="ContactID"    Passes="0" Value="[ContactID]"/>
+        <Output Type="FirstName"    Passes="0" Value="[FirstName]"/>
+        <Output Type="CompanyName"  Passes="0" Value="[CompanyName]"/>
+        <Output Type="Email"        Passes="0" Value="[Email]"/>
+        <Output Type="PhoneBusiness" Passes="0" Value="[PhoneBusiness]"/>
+        <Output Type="PhoneMobile"  Passes="0" Value="[PhoneMobile]"/>
+        <Output Type="ContactUrl"   Passes="0" Value="[ERPNextURL]/[EntityType]/[ContactID]"/>
+        <Output Type="EntityId"     Passes="0" Value="[ContactID]"/>
+        <Output Type="EntityType"   Passes="0" Value="[EntityType]"/>
       </Outputs>
     </Scenario>
-
-    <!-- ================================================================
-         SCENARIO 2: Report answered inbound call
-         ================================================================ -->
     <Scenario Id="ReportCall" Type="REST">
       <Request
         SkipIf="[IIf([ReportCallEnabled]!=True||[EntityId]==&quot;&quot;,True,[IIf([CallType]!=Inbound,True,False)])]"
         Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.log_call"
         MessagePasses="0"
-        RequestEncoding="Json"
         RequestType="Post"
         ResponseType="Json"
         RequestContentType="application/json">
@@ -103,16 +67,11 @@
       <Variables/>
       <Outputs Next="ReportCallMissed" AllowEmpty="true"/>
     </Scenario>
-
-    <!-- ================================================================
-         SCENARIO 3: Report missed inbound call
-         ================================================================ -->
     <Scenario Id="ReportCallMissed" Type="REST">
       <Request
         SkipIf="[IIf([ReportCallEnabled]!=True||[EntityId]==&quot;&quot;,True,[IIf([CallType]!=Missed,True,False)])]"
         Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.log_call"
         MessagePasses="0"
-        RequestEncoding="Json"
         RequestType="Post"
         ResponseType="Json"
         RequestContentType="application/json">
@@ -132,16 +91,11 @@
       <Variables/>
       <Outputs Next="ReportCallOutbound" AllowEmpty="true"/>
     </Scenario>
-
-    <!-- ================================================================
-         SCENARIO 4: Report answered outbound call
-         ================================================================ -->
     <Scenario Id="ReportCallOutbound" Type="REST">
       <Request
         SkipIf="[IIf([ReportCallEnabled]!=True||[EntityId]==&quot;&quot;,True,[IIf([CallType]!=Outbound,True,False)])]"
         Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.log_call"
         MessagePasses="0"
-        RequestEncoding="Json"
         RequestType="Post"
         ResponseType="Json"
         RequestContentType="application/json">
@@ -161,16 +115,11 @@
       <Variables/>
       <Outputs Next="ReportCallNotAnswered" AllowEmpty="true"/>
     </Scenario>
-
-    <!-- ================================================================
-         SCENARIO 5: Report unanswered outbound call
-         ================================================================ -->
     <Scenario Id="ReportCallNotAnswered" Type="REST">
       <Request
         SkipIf="[IIf([ReportCallEnabled]!=True||[EntityId]==&quot;&quot;,True,[IIf([CallType]!=Notanswered,True,False)])]"
         Url="[ERPNextURL]/api/method/az_it.az_it.api.telephony.log_call"
         MessagePasses="0"
-        RequestEncoding="Json"
         RequestType="Post"
         ResponseType="Json"
         RequestContentType="application/json">
@@ -190,6 +139,5 @@
       <Variables/>
       <Outputs AllowEmpty="false"/>
     </Scenario>
-
   </Scenarios>
 </Crm>
