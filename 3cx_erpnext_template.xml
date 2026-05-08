@@ -21,6 +21,7 @@
       <Variables>
         <Variable Name="ContactID" LookupValue="" Path="">message.contact_id<Filter /></Variable>
         <Variable Name="FirstName" LookupValue="" Path="">message.first_name<Filter /></Variable>
+        <Variable Name="LastName" LookupValue="" Path="">message.last_name<Filter /></Variable>
         <Variable Name="CompanyName" LookupValue="" Path="">message.company_name<Filter /></Variable>
         <Variable Name="Email" LookupValue="" Path="">message.email<Filter /></Variable>
         <Variable Name="PhoneBusiness" LookupValue="" Path="">message.phone_business<Filter /></Variable>
@@ -30,6 +31,7 @@
       <Outputs AllowEmpty="false">
         <Output Type="ContactID" Passes="0" Value="[ContactID]" />
         <Output Type="FirstName" Passes="0" Value="[FirstName]" />
+        <Output Type="LastName" Passes="0" Value="[LastName]" />
         <Output Type="CompanyName" Passes="0" Value="[CompanyName]" />
         <Output Type="Email" Passes="0" Value="[Email]" />
         <Output Type="PhoneBusiness" Passes="0" Value="[PhoneBusiness]" />

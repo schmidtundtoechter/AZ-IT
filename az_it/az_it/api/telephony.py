@@ -9,6 +9,21 @@ def _normalize(number):
 	return digits[-9:] if len(digits) >= 9 else digits
 
 
+def _get_company_for_contact(contact_id):
+	"""Return company name: Contact.company_name first, then first linked Customer."""
+	company = frappe.db.get_value("Contact", contact_id, "company_name") or ""
+	if company:
+		return company
+	link_name = frappe.db.get_value(
+		"Dynamic Link",
+		{"parent": contact_id, "parenttype": "Contact", "link_doctype": "Customer"},
+		"link_name",
+	)
+	if link_name:
+		company = frappe.db.get_value("Customer", link_name, "customer_name") or ""
+	return company
+
+
 def _lookup_contact(normalized):
 	"""Search Contact Phone child table by normalized number."""
 	result = frappe.db.sql(
@@ -16,6 +31,7 @@ def _lookup_contact(normalized):
 		SELECT
 			cp.parent AS contact_id,
 			c.first_name,
+			c.middle_name,
 			c.last_name,
 			c.company_name,
 			cp.phone AS matched_phone
@@ -49,12 +65,18 @@ def _lookup_contact(normalized):
 	phone_business = phones[0]["phone"] if phones else ""
 	phone_mobile = phones[1]["phone"] if len(phones) > 1 else ""
 
-	full_name = " ".join(filter(None, [row.get("first_name"), row.get("last_name")]))
+	first_name = " ".join(filter(None, [
+		(row.get("first_name") or "").strip(),
+		(row.get("middle_name") or "").strip(),
+	]))
+	last_name = (row.get("last_name") or "").strip()
+	company = _get_company_for_contact(contact_id)
 
 	return {
 		"contact_id": contact_id,
-		"first_name": full_name or row.get("company_name") or "",
-		"company_name": row.get("company_name") or "",
+		"first_name": first_name or last_name or company or "",
+		"last_name": last_name,
+		"company_name": company,
 		"email": email_row or "",
 		"phone_business": phone_business or "",
 		"phone_mobile": phone_mobile or "",
@@ -133,12 +155,21 @@ def log_call(
 	minutes, seconds = divmod(duration_seconds, 60)
 	duration_str = f"{minutes}m {seconds}s" if minutes else f"{seconds}s"
 
+	company = ""
+	if entity_id:
+		if entity_type == "Contact":
+			company = _get_company_for_contact(entity_id)
+		elif entity_type == "Lead":
+			company = frappe.db.get_value("Lead", entity_id, "company_name") or ""
+
 	subject = f"{call_type} call {'from' if sent_or_received == 'Received' else 'to'} {number}"
 	content_lines = [
 		f"Duration: {duration_str}",
 		f"Agent: {agent_email}",
 		f"Number: {number}",
 	]
+	if company:
+		content_lines.append(f"Company: {company}")
 	if call_direction:
 		content_lines.append(f"Direction: {call_direction}")
 
