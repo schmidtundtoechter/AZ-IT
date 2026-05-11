@@ -65,17 +65,16 @@ def _lookup_contact(normalized):
 	phone_business = phones[0]["phone"] if phones else ""
 	phone_mobile = phones[1]["phone"] if len(phones) > 1 else ""
 
-	first_name = " ".join(filter(None, [
-		(row.get("first_name") or "").strip(),
-		(row.get("middle_name") or "").strip(),
-	]))
-	last_name = (row.get("last_name") or "").strip()
+	first_name_val  = (row.get("first_name")  or "").strip()
+	middle_name_val = (row.get("middle_name") or "").strip()
+	last_name_val   = (row.get("last_name")   or "").strip()
 	company = _get_company_for_contact(contact_id)
 
 	return {
 		"contact_id": contact_id,
-		"first_name": first_name or last_name or company or "",
-		"last_name": last_name,
+		"first_name":  first_name_val or company or "",
+		"middle_name": middle_name_val,
+		"last_name":   last_name_val,
 		"company_name": company,
 		"email": email_row or "",
 		"phone_business": phone_business or "",
