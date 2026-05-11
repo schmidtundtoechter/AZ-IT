@@ -21,7 +21,6 @@
       <Variables>
         <Variable Name="ContactID" LookupValue="" Path="">message.contact_id<Filter /></Variable>
         <Variable Name="FirstName" LookupValue="" Path="">message.first_name<Filter /></Variable>
-        <Variable Name="MiddleName" LookupValue="" Path="">message.middle_name<Filter /></Variable>
         <Variable Name="LastName" LookupValue="" Path="">message.last_name<Filter /></Variable>
         <Variable Name="CompanyName" LookupValue="" Path="">message.company_name<Filter /></Variable>
         <Variable Name="Email" LookupValue="" Path="">message.email<Filter /></Variable>
@@ -32,7 +31,6 @@
       <Outputs AllowEmpty="false">
         <Output Type="ContactID" Passes="0" Value="[ContactID]" />
         <Output Type="FirstName" Passes="0" Value="[FirstName]" />
-        <Output Type="MiddleName" Passes="0" Value="[MiddleName]" />
         <Output Type="LastName" Passes="0" Value="[LastName]" />
         <Output Type="CompanyName" Passes="0" Value="[CompanyName]" />
         <Output Type="Email" Passes="0" Value="[Email]" />
