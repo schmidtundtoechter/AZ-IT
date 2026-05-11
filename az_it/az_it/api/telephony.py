@@ -10,18 +10,18 @@ def _normalize(number):
 
 
 def _get_company_for_contact(contact_id):
-	"""Return company name: Contact.company_name first, then first linked Customer."""
+	"""Return company name: Contact.company_name first, then first linked Customer (by idx)."""
 	company = frappe.db.get_value("Contact", contact_id, "company_name") or ""
 	if company:
 		return company
-	link_name = frappe.db.get_value(
+	rows = frappe.db.get_all(
 		"Dynamic Link",
-		{"parent": contact_id, "parenttype": "Contact", "link_doctype": "Customer"},
-		"link_name",
+		filters={"parent": contact_id, "parenttype": "Contact", "link_doctype": "Customer"},
+		fields=["link_name"],
+		order_by="idx asc",
+		limit=1,
 	)
-	if link_name:
-		company = frappe.db.get_value("Customer", link_name, "customer_name") or ""
-	return company
+	return rows[0]["link_name"] if rows else ""
 
 
 def _lookup_contact(normalized):
