@@ -188,5 +188,24 @@
   "reference_doctype": "Delivery Note",
   "script": "doc.custom_delivery_employee = frappe.session.user",
   "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Submit",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2026-05-13 11:58:17.270126",
+  "module": "Az It",
+  "name": "Seriennummer - Eingangsrechnung über SN-Bündel ermitteln und eintragen",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "reference_doctype": "Purchase Invoice",
+  "script": "for pi_item in doc.items:\r\n    # Nur Positionen, die aus einem Purchase Receipt kommen\r\n    if not pi_item.pr_detail:\r\n        continue\r\n\r\n    serial_and_batch_bundle = frappe.db.get_value(\r\n        \"Purchase Receipt Item\",\r\n        pi_item.pr_detail,\r\n        \"serial_and_batch_bundle\"\r\n    )\r\n\r\n    if not serial_and_batch_bundle:\r\n        continue\r\n\r\n    serial_nos = frappe.get_all(\r\n        \"Serial and Batch Entry\",\r\n        filters={\r\n            \"parent\": serial_and_batch_bundle\r\n        },\r\n        pluck=\"serial_no\"\r\n    )\r\n\r\n    for serial_no in serial_nos:\r\n        if serial_no:\r\n            frappe.db.set_value(\r\n                \"Serial No\",\r\n                serial_no,\r\n                \"custom_purchase_invoice\",\r\n                doc.name\r\n            )",
+  "script_type": "DocType Event"
  }
 ]
