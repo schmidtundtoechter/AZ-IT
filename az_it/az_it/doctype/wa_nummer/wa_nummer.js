@@ -14,9 +14,9 @@ frappe.ui.form.on("WA Nummer", {
 				frappe.set_route('Form', 'Customer', frm.doc.kunde);
 			});
 
-			frm.add_custom_button(__('View Sales Order'), function() {
-				if (frm.doc.auftrag) {
-					frappe.set_route('Form', 'Sales Order', frm.doc.auftrag);
+			frm.add_custom_button(__('View Sales Invoice'), function() {
+				if (frm.doc.ausgangsrechnung) {
+					frappe.set_route('Form', 'Sales Invoice', frm.doc.ausgangsrechnung);
 				}
 			});
 		}

@@ -12,7 +12,7 @@
   "zugehoeriger_artikel",
   "column_break_1",
   "vertragsabschluss",
-  "auftrag",
+  "ausgangsrechnung",
   "deaktiviert",
   "section_break_2",
   "aktueller_preis",
@@ -60,13 +60,13 @@
    "label": "Vertragsabschluss"
   },
   {
-   "description": "Auftrag mit dieser WA Nummer",
-   "fieldname": "auftrag",
+   "description": "Ausgangsrechnung mit dieser WA Nummer",
+   "fieldname": "ausgangsrechnung",
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Auftrag",
-   "options": "Sales Order"
+   "label": "Ausgangsrechnung",
+   "options": "Sales Invoice"
   },
   {
    "default": "0",

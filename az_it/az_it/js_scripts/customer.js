@@ -33,7 +33,7 @@ function load_wa_nummer_list(frm) {
             filters: {
                 kunde: frm.doc.name
             },
-            fields: ['name', 'wa_nummer', 'zugehoeriger_artikel', 'vertragsabschluss', 'aktueller_preis', 'auftrag'],
+            fields: ['name', 'wa_nummer', 'zugehoeriger_artikel', 'vertragsabschluss', 'aktueller_preis', 'ausgangsrechnung'],
             order_by: 'creation desc',
             limit: 100
         },
@@ -46,7 +46,7 @@ function load_wa_nummer_list(frm) {
                 html += '<th>Article</th>';
                 html += '<th>Contract Date</th>';
                 html += '<th>Current Price</th>';
-                html += '<th>Sales Order</th>';
+                html += '<th>Sales Invoice</th>';
                 html += '</tr></thead><tbody>';
 
                 r.message.forEach(function(wa) {
@@ -55,7 +55,7 @@ function load_wa_nummer_list(frm) {
                     html += '<td>' + (wa.zugehoeriger_artikel || '-') + '</td>';
                     html += '<td>' + (wa.vertragsabschluss || '-') + '</td>';
                     html += '<td>' + (wa.aktueller_preis ? format_currency(wa.aktueller_preis) : '-') + '</td>';
-                    html += '<td>' + (wa.auftrag ? '<a href="/app/sales-order/' + encodeURIComponent(wa.auftrag) + '">' + wa.auftrag + '</a>' : '-') + '</td>';
+                    html += '<td>' + (wa.ausgangsrechnung ? '<a href="/app/sales-invoice/' + encodeURIComponent(wa.ausgangsrechnung) + '">' + wa.ausgangsrechnung + '</a>' : '-') + '</td>';
                     html += '</tr>';
                 });
 

@@ -41,7 +41,6 @@ frappe.ui.form.on('Sales Order', {
             frm.add_custom_button(__('Create WA Nummer'), function() {
                 frappe.new_doc('WA Nummer', {
                     kunde: frm.doc.customer,
-                    auftrag: frm.doc.name,
                     vertragsabschluss: frappe.datetime.get_today()
                 });
             }, __("Create"));
