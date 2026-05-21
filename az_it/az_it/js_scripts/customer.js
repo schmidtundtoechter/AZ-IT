@@ -33,7 +33,7 @@ function load_wa_nummer_list(frm) {
             filters: {
                 kunde: frm.doc.name
             },
-            fields: ['name', 'wa_nummer', 'zugehoeriger_artikel', 'vertragsabschluss', 'aktueller_preis', 'ausgangsrechnung'],
+            fields: ['name', 'wa_nummer', 'zugehoeriger_artikel', 'vertragsabschluss', 'aktueller_preis', 'ausgangsrechnung', 'kommentar'],
             order_by: 'creation desc',
             limit: 100
         },
@@ -47,6 +47,7 @@ function load_wa_nummer_list(frm) {
                 html += '<th>Contract Date</th>';
                 html += '<th>Current Price</th>';
                 html += '<th>Sales Invoice</th>';
+                html += '<th>Kommentar</th>';
                 html += '</tr></thead><tbody>';
 
                 r.message.forEach(function(wa) {
@@ -56,6 +57,8 @@ function load_wa_nummer_list(frm) {
                     html += '<td>' + (wa.vertragsabschluss || '-') + '</td>';
                     html += '<td>' + (wa.aktueller_preis ? format_currency(wa.aktueller_preis) : '-') + '</td>';
                     html += '<td>' + (wa.ausgangsrechnung ? '<a href="/app/sales-invoice/' + encodeURIComponent(wa.ausgangsrechnung) + '">' + wa.ausgangsrechnung + '</a>' : '-') + '</td>';
+                    let kommentar = wa.kommentar || '';
+                    html += '<td style="max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="' + kommentar.replace(/"/g, '&quot;') + '">' + (kommentar || '-') + '</td>';
                     html += '</tr>';
                 });
 
