@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 az_it.patches.v1_0.remove_old_scripts
 az_it.patches.v1_0.fix_blank_lines_in_descriptions
+az_it.patches.v1_0.disable_clean_html_stock_setting
