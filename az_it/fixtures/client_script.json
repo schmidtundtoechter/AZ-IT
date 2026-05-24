@@ -134,6 +134,17 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Payment Entry",
+  "enabled": 1,
+  "modified": "2026-05-22 00:00:00.000000",
+  "module": "Az It",
+  "name": "Zahlung - Schnellere Eingabe durch Befüllung von Referenznummer und R.-Datum",
+  "script": "frappe.ui.form.on(\"Payment Entry\", {\n    onload(frm) {\n\n        // Nur setzen wenn leer\n        if (!frm.doc.reference_no) {\n\n            // Zufällige Zeichenfolge erzeugen\n            const random_ref = Math.random()\n                .toString(36)\n                .substring(2, 12)\n                .toUpperCase();\n\n            frm.set_value(\"reference_no\", random_ref);\n        }\n\n        // Falls reference_date ebenfalls Probleme macht\n        if (!frm.doc.reference_date) {\n            frm.set_value(\"reference_date\", frm.doc.posting_date || frappe.datetime.get_today());\n        }\n    }\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "ToDo",
   "enabled": 1,
   "modified": "2025-02-03 16:02:56.406168",

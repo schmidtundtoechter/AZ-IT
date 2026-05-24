@@ -282,6 +282,7 @@ fixtures = [
                 "Lead Angebot Zugesendet ToDo",
                 "Opportunity Angebot Zugesendet ToDo",
                 "ToDo - Aufgabe mit letztem Kommentar versehen",
+                "Zahlung - Schnellere Eingabe durch Befüllung von Referenznummer und R.-Datum",
             ]]
         ]
     },
