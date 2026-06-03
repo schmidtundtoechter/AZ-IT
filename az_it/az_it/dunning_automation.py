@@ -181,6 +181,14 @@ def _create_dunning_draft(invoice, dunning_type_config):
 		target.income_account = dunning_type_doc.income_account
 		target.cost_center = dunning_type_doc.cost_center
 
+		# Adjust outstanding before validate so validate_totals() sees the correct value
+		if source.payment_schedule and len(source.payment_schedule) == 1:
+			if target.overdue_payments:
+				target.overdue_payments[0].outstanding = source.get("outstanding_amount")
+
+		# validate() → validate_totals() sets total_outstanding; must run before letter text render
+		target.validate()
+
 		letter_text = get_dunning_letter_text(
 			dunning_type=dunning_type_doc.name,
 			doc=target.as_dict(),
@@ -190,13 +198,6 @@ def _create_dunning_draft(invoice, dunning_type_config):
 			target.body_text = letter_text.get("body_text")
 			target.closing_text = letter_text.get("closing_text")
 			target.language = letter_text.get("language")
-
-		# Adjust outstanding for invoices with a single payment schedule row
-		if source.payment_schedule and len(source.payment_schedule) == 1:
-			if target.overdue_payments:
-				target.overdue_payments[0].outstanding = source.get("outstanding_amount")
-
-		target.validate()
 
 	dunning = get_mapped_doc(
 		from_doctype="Sales Invoice",
