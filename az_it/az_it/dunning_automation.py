@@ -88,23 +88,23 @@ def _process_invoice(invoice, dunning_types_by_level):
 				_create_dunning_draft(invoice, l1)
 				return  # One level per run
 
-	# --- Level 2 (only if Level 1 has been submitted/sent) ---
+	# --- Level 2 (triggered N days after Level 1 was created, draft or submitted) ---
 	l2 = dunning_types_by_level.get(2)
 	if l2:
-		submitted_l1 = _get_submitted_dunning(invoice.name, 1)
-		if submitted_l1:
-			trigger_date = getdate(add_days(submitted_l1.posting_date, l2.custom_days_trigger if l2.custom_days_trigger is not None else 10))
+		existing_l1 = _get_existing_dunning(invoice.name, 1)
+		if existing_l1:
+			trigger_date = getdate(add_days(existing_l1.posting_date, l2.custom_days_trigger if l2.custom_days_trigger is not None else 10))
 			if today_date >= trigger_date:
 				if not _get_existing_dunning(invoice.name, 2):
 					_create_dunning_draft(invoice, l2)
 					return
 
-	# --- Level 3 (only if Level 2 has been submitted/sent) ---
+	# --- Level 3 (triggered N days after Level 2 was created, draft or submitted) ---
 	l3 = dunning_types_by_level.get(3)
 	if l3:
-		submitted_l2 = _get_submitted_dunning(invoice.name, 2)
-		if submitted_l2:
-			trigger_date = getdate(add_days(submitted_l2.posting_date, l3.custom_days_trigger if l3.custom_days_trigger is not None else 10))
+		existing_l2 = _get_existing_dunning(invoice.name, 2)
+		if existing_l2:
+			trigger_date = getdate(add_days(existing_l2.posting_date, l3.custom_days_trigger if l3.custom_days_trigger is not None else 10))
 			if today_date >= trigger_date:
 				if not _get_existing_dunning(invoice.name, 3):
 					_create_dunning_draft(invoice, l3)
@@ -135,30 +135,6 @@ def _get_existing_dunning(sales_invoice_name, level):
 
 	return result[0] if result else None
 
-
-def _get_submitted_dunning(sales_invoice_name, level):
-	"""
-	Returns the submitted (docstatus=1) Dunning at the given level for the invoice.
-	Used to check whether the prior level has been sent before escalating.
-	"""
-	dunning = frappe.qb.DocType("Dunning")
-	op = frappe.qb.DocType("Overdue Payment")
-	dt = frappe.qb.DocType("Dunning Type")
-
-	result = (
-		frappe.qb.from_(dunning)
-		.join(op)
-		.on(op.parent == dunning.name)
-		.join(dt)
-		.on(dt.name == dunning.dunning_type)
-		.select(dunning.name, dunning.posting_date)
-		.where(op.sales_invoice == sales_invoice_name)
-		.where(dt.custom_dunning_level == level)
-		.where(dunning.docstatus == 1)  # only submitted
-		.limit(1)
-	).run(as_dict=True)
-
-	return result[0] if result else None
 
 
 def _create_dunning_draft(invoice, dunning_type_config):
