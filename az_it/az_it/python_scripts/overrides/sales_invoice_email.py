@@ -54,7 +54,7 @@ def _is_sales_invoice_outgoing_email(doc):
         bool: True if this is an outgoing email from Sales Invoice
     """
     return (
-        doc.reference_doctype == "Sales Invoice"
+        doc.reference_doctype in ("Sales Invoice", "Dunning")
         and doc.communication_medium == "Email"
         and doc.sent_or_received == "Sent"
     )
