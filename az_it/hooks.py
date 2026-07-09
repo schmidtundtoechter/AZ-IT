@@ -171,7 +171,10 @@ doc_events = {
     },
     "Delivery Note": {
         "validate": "az_it.az_it.python_scripts.overrides.delivery_note_discount.validate_custom_discount"
-    }
+    },
+    "Contact": {
+        "on_update": "az_it.az_it.python_scripts.overrides.contact_3cx.push_if_synced"
+    },
 }
 
 # Scheduled Tasks
@@ -306,7 +309,7 @@ fixtures = [
     {
         "doctype": "Custom Field",
         "filters": [
-            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice", "Quotation Item", "Sales Order Item", "Sales Invoice Item", "Delivery Note Item", "Dunning Type"]]
+            ["dt", "in", ["Delivery Note", "Sales Order", "Quotation", "Sales Invoice", "Quotation Item", "Sales Order Item", "Sales Invoice Item", "Delivery Note Item", "Dunning Type", "Contact"]]
         ]
     },
     {

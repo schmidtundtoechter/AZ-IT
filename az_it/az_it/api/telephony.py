@@ -1,6 +1,58 @@
 import re
 import frappe
+import requests
 from frappe.utils import now_datetime
+
+
+def _get_3cx_config():
+    return {
+        "url": (frappe.conf.get("3cx_url") or "").rstrip("/"),
+        "client_id": frappe.conf.get("3cx_client_id") or "",
+        "client_secret": frappe.conf.get("3cx_client_secret") or "",
+    }
+
+
+def push_contact_to_3cx(contact_data):
+    """
+    Upsert a single contact into the 3CX phonebook.
+    Silently skips if 3cx_url is not configured in site_config.json.
+    Expected site_config keys: 3cx_url, 3cx_client_id, 3cx_client_secret.
+    """
+    cfg = _get_3cx_config()
+    if not cfg["url"]:
+        return
+
+    try:
+        tok_resp = requests.post(
+            f"{cfg['url']}/connect/token",
+            data={
+                "grant_type": "client_credentials",
+                "client_id": cfg["client_id"],
+                "client_secret": cfg["client_secret"],
+            },
+            timeout=10,
+        )
+        token = tok_resp.json().get("access_token", "")
+        if not token:
+            frappe.log_error("3CX token fetch returned no access_token", "3CX Phonebook Sync")
+            return
+
+        payload = {
+            "FirstName": contact_data.get("first_name", ""),
+            "LastName": contact_data.get("last_name", ""),
+            "Company": contact_data.get("company_name", ""),
+            "BusinessPhone": contact_data.get("phone_business", ""),
+            "MobilePhone": contact_data.get("phone_mobile", ""),
+            "Email": contact_data.get("email", ""),
+        }
+        requests.post(
+            f"{cfg['url']}/api/contacts",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            timeout=10,
+        )
+    except Exception as e:
+        frappe.log_error(f"3CX phonebook push failed: {e}", "3CX Phonebook Sync")
 
 
 def _normalize(number):
@@ -124,6 +176,11 @@ def lookup_contact_by_number(number):
 		return {}
 
 	result = _lookup_contact(normalized) or _lookup_lead(normalized)
+	if result and result.get("entity_type") == "Contact":
+		contact_id = result["contact_id"]
+		if not frappe.db.get_value("Contact", contact_id, "custom_3cx_synced"):
+			push_contact_to_3cx(result)
+			frappe.db.set_value("Contact", contact_id, "custom_3cx_synced", 1)
 	return result or {}
 
 

@@ -1879,5 +1879,16 @@
   "translatable": 0,
   "unique": 0,
   "width": null
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Contact",
+  "fieldname": "custom_3cx_synced",
+  "fieldtype": "Check",
+  "label": "In 3CX Phonebook",
+  "insert_after": "last_name",
+  "default": "0",
+  "read_only": 1,
+  "name": "Contact-custom_3cx_synced"
  }
 ]
