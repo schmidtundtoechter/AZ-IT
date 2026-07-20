@@ -184,6 +184,9 @@ scheduler_events = {
 	"daily": [
 		"az_it.az_it.dunning_automation.auto_create_dunnings",
 	],
+	"hourly": [
+		"az_it.az_it.tasks.sync_contacts_to_3cx",
+	],
 }
 
 # Testing
