@@ -36,21 +36,40 @@ def push_contact_to_3cx(contact_data):
         token = tok_resp.json().get("access_token", "")
         if not token:
             frappe.log_error("3CX token fetch returned no access_token", "3CX Phonebook Sync")
-            return
+            return False
 
-        payload = {
-            "FirstName": contact_data.get("first_name", ""),
-            "LastName": contact_data.get("last_name", ""),
-            "Company": contact_data.get("company_name", ""),
-            "BusinessPhone": contact_data.get("phone_business", ""),
-            "MobilePhone": contact_data.get("phone_mobile", ""),
-            "Email": contact_data.get("email", ""),
-        }
+        # 3CX ImportContacts expects CSV with this exact column order:
+        # Name, Last Name, Company, Mobile, Mobile2, Home, Home 2,
+        # Business, Business2, e-mail, Other, Business Fax, Home Fax, Pager
+        import csv, io
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow([
+            "Name", "Last Name", "Company",
+            "Mobile", "Mobile2", "Home", "Home 2",
+            "Business", "Business2", "e-mail",
+            "Other", "Business Fax", "Home Fax", "Pager",
+        ])
+        writer.writerow([
+            contact_data.get("first_name", ""),
+            contact_data.get("last_name", ""),
+            contact_data.get("company_name", ""),
+            contact_data.get("phone_mobile", ""),
+            "", "", "",
+            contact_data.get("phone_business", ""),
+            "",
+            contact_data.get("email", ""),
+            "", "", "", "",
+        ])
+
         resp = requests.post(
-            f"{cfg['url']}/xapi/v1/SystemContacts",
-            json=payload,
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-            timeout=10,
+            f"{cfg['url']}/xapi/v1/Contacts/Pbx.ImportContacts",
+            data=buf.getvalue().encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "text/csv",
+            },
+            timeout=15,
             verify=False,
         )
         if not resp.ok:
@@ -59,6 +78,15 @@ def push_contact_to_3cx(contact_data):
                 message=resp.text[:2000],
             )
             return False
+
+        result = resp.json()
+        if not result.get("success") or not result.get("importCount"):
+            frappe.log_error(
+                title="3CX contact push: importCount=0",
+                message=str(result)[:2000],
+            )
+            return False
+
         return True
     except Exception as e:
         frappe.log_error(str(e)[:140], "3CX Phonebook Sync")
