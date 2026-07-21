@@ -45,10 +45,10 @@ def push_contact_to_3cx(contact_data):
         buf = io.StringIO()
         writer = csv.writer(buf)
         writer.writerow([
-            "Name", "Last Name", "Company",
-            "Mobile", "Mobile2", "Home", "Home 2",
-            "Business", "Business2", "e-mail",
-            "Other", "Business Fax", "Home Fax", "Pager",
+            "FirstName", "LastName", "Company",
+            "Mobile", "Mobile2", "Home", "Home2",
+            "Business", "Business2", "Email",
+            "Other", "BusinessFax", "HomeFax", "Pager",
         ])
         writer.writerow([
             contact_data.get("first_name", ""),
