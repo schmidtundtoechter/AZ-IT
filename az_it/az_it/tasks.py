@@ -53,6 +53,6 @@ def sync_contacts_to_3cx():
 
 		except Exception:
 			frappe.log_error(
-				title=f"3CX hourly sync failed for Contact {row.get('name')}",
+				title=f"3CX sync failed: {row.get('name', '')}"[:140],
 				message=frappe.get_traceback(),
 			)

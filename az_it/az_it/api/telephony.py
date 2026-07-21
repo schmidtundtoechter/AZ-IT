@@ -31,6 +31,7 @@ def push_contact_to_3cx(contact_data):
                 "client_secret": cfg["client_secret"],
             },
             timeout=10,
+            verify=False,
         )
         token = tok_resp.json().get("access_token", "")
         if not token:
@@ -50,9 +51,10 @@ def push_contact_to_3cx(contact_data):
             json=payload,
             headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
             timeout=10,
+            verify=False,
         )
     except Exception as e:
-        frappe.log_error(f"3CX phonebook push failed: {e}", "3CX Phonebook Sync")
+        frappe.log_error(str(e)[:140], "3CX Phonebook Sync")
 
 
 def _normalize(number):
