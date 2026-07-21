@@ -64,11 +64,8 @@ def push_contact_to_3cx(contact_data):
 
         resp = requests.post(
             f"{cfg['url']}/xapi/v1/Contacts/Pbx.ImportContacts",
-            data=buf.getvalue().encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "text/csv",
-            },
+            files={"fileInput": ("contacts.csv", buf.getvalue().encode("utf-8"), "text/csv")},
+            headers={"Authorization": f"Bearer {token}"},
             timeout=15,
             verify=False,
         )
