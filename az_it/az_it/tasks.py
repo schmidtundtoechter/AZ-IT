@@ -40,7 +40,7 @@ def sync_contacts_to_3cx():
 			company = row.get("company_name") or _get_company_for_contact(contact_id)
 			first_name = (row.get("first_name") or "").strip()
 
-			push_contact_to_3cx({
+			success = push_contact_to_3cx({
 				"first_name": first_name or company or "",
 				"last_name": (row.get("last_name") or "").strip(),
 				"company_name": company,
@@ -49,7 +49,8 @@ def sync_contacts_to_3cx():
 				"phone_mobile": phones[1]["phone"] if len(phones) > 1 else "",
 			})
 
-			frappe.db.set_value("Contact", contact_id, "custom_3cx_synced", 1)
+			if success:
+				frappe.db.set_value("Contact", contact_id, "custom_3cx_synced", 1)
 
 		except Exception:
 			frappe.log_error(

@@ -46,15 +46,23 @@ def push_contact_to_3cx(contact_data):
             "MobilePhone": contact_data.get("phone_mobile", ""),
             "Email": contact_data.get("email", ""),
         }
-        requests.post(
-            f"{cfg['url']}/api/contacts",
+        resp = requests.post(
+            f"{cfg['url']}/xapi/v1/SystemContacts",
             json=payload,
             headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
             timeout=10,
             verify=False,
         )
+        if not resp.ok:
+            frappe.log_error(
+                title=f"3CX contact push failed: HTTP {resp.status_code}",
+                message=resp.text[:2000],
+            )
+            return False
+        return True
     except Exception as e:
         frappe.log_error(str(e)[:140], "3CX Phonebook Sync")
+        return False
 
 
 def _normalize(number):
@@ -181,8 +189,8 @@ def lookup_contact_by_number(number):
 	if result and result.get("entity_type") == "Contact":
 		contact_id = result["contact_id"]
 		if not frappe.db.get_value("Contact", contact_id, "custom_3cx_synced"):
-			push_contact_to_3cx(result)
-			frappe.db.set_value("Contact", contact_id, "custom_3cx_synced", 1)
+			if push_contact_to_3cx(result):
+				frappe.db.set_value("Contact", contact_id, "custom_3cx_synced", 1)
 	return result or {}
 
 
