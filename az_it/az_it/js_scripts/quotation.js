@@ -24,6 +24,61 @@ frappe.ui.form.on('Quotation', {
                 true
             );
         }
+
+        if (!frm.is_new()) {
+            frm.add_custom_button(__('Erinnere mich'), function() {
+                let party = frm.doc.customer_name || frm.doc.party_name || frm.doc.name;
+                frappe.prompt([
+                    {
+                        fieldname: 'date',
+                        fieldtype: 'Date',
+                        label: __('Wiedervorlage Datum'),
+                        reqd: 1,
+                        default: frappe.datetime.add_days(frappe.datetime.get_today(), 7)
+                    },
+                    {
+                        fieldname: 'allocated_to',
+                        fieldtype: 'Link',
+                        options: 'User',
+                        label: __('Zugewiesen an'),
+                        reqd: 1,
+                        default: frappe.session.user
+                    },
+                    {
+                        fieldname: 'description',
+                        fieldtype: 'Small Text',
+                        label: __('Notiz'),
+                        default: `WVL ${party} – Angebot ${frm.doc.name}`
+                    }
+                ], function(values) {
+                    frappe.call({
+                        method: 'frappe.client.insert',
+                        args: {
+                            doc: {
+                                doctype: 'ToDo',
+                                date: values.date,
+                                allocated_to: values.allocated_to,
+                                description: values.description,
+                                reference_type: 'Quotation',
+                                reference_name: frm.doc.name,
+                                status: 'Open',
+                                priority: 'Medium'
+                            }
+                        },
+                        callback: function(r) {
+                            if (r.exc) {
+                                frappe.msgprint(__('Das ToDo konnte nicht erstellt werden.'));
+                            } else {
+                                frappe.show_alert({
+                                    message: __('Wiedervorlage erfolgreich erstellt.'),
+                                    indicator: 'green'
+                                }, 5);
+                            }
+                        }
+                    });
+                }, __('Erinnere mich'), __('Erstellen'));
+            }, __('Erstellen'));
+        }
     }
 });
 
