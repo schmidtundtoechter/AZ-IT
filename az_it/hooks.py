@@ -270,6 +270,8 @@ fixtures = [
         "filters": [
             ["name", "in", [
                 "Angebot - Kundennummer ziehen",
+                "Ausgangsrechnung - E-Mail-Adresse an prim. Kontakt der Kontaktperson senden (Kontr je öffnen)",
+                "Ausgangsrechnung - Zeitabrechnung optimieren - Standardkonten aus Unternehmen in Artikeltabelle einfügen",
                 "Chance - Button legt Firmenname in die Zwischenablage",
                 "Chance - Entfernen falscher Mobilnummern",
                 "Internal Customer Series",
