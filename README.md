@@ -4,6 +4,13 @@ Interne Frappe-App für AZ-IT / Schmidt und Töchter.
 
 **Lizenz:** MIT
 
+## Dokumentation und Änderungsverlauf
+
+Der vollständige [Bestand und Änderungsverlauf](CHANGELOG.md) dokumentiert alle
+Skripte, Custom Fields, Property Setter und Felder eigener DocTypes.
+Diese Dokumentation wird bei jeder Änderung mitgepflegt; der Pflegeablauf steht
+in [AGENTS.md](AGENTS.md).
+
 ## Versionierung und lokale Entwicklung
 
 Die Version steht ausschließlich in `az_it/__init__.py`; Flit liest sie dort aus.
@@ -35,8 +42,16 @@ git pull --rebase origin main
 
 `SCRIPT_INVENTORY.csv` enthält alle exportierten Client-/Server-Script-Datensätze
 und sämtliche Python-, JavaScript- und Shell-Dateien (ohne leere Paketinitialisierungen).
-Stand der ersten Aufnahme: 19.10.2026. Alle 15 Client Scripts haben `enabled=1`,
-alle 10 Server Scripts `disabled=0`. Das sind Exportwerte aus dem Repository,
+Aktueller dokumentierter Stand: 19.10.2026. Alle 13 enthaltenen Client Scripts sind
+aktiviert; alle 10 Server Scripts haben `disabled=0`.
+Die beiden Client Scripts `Internal Customer Series` und
+`Kunde - automatische Kundennummer` wurden aus Fixtures und Export-Auswahl entfernt.
+Bei Neuinstallationen werden sie nicht angelegt; bereits vorhandene Einträge
+werden auf bestehenden Sites vom Administrator manuell gelöscht.
+Die automatische interne
+Kundennummer vergibt ausschließlich das aktive Server Script
+`Customer Internal Number Auto Assignment - Update` beim Speichern neuer Kunden.
+Das sind Exportwerte aus dem Repository,
 keine Bestätigung des Zustands einer laufenden ERPNext-Site.
 
 Die sechs JavaScript-Dateien in `js_scripts` sind über `doctype_js` registriert;

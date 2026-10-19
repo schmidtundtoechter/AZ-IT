@@ -274,8 +274,6 @@ fixtures = [
                 "Ausgangsrechnung - Zeitabrechnung optimieren - Standardkonten aus Unternehmen in Artikeltabelle einfügen",
                 "Chance - Button legt Firmenname in die Zwischenablage",
                 "Chance - Entfernen falscher Mobilnummern",
-                "Internal Customer Series",
-                "Kunde - automatische Kundennummer",
                 "Lead - Auswahl Primärkontakt",
                 "Lead - Button - Legt Firmenname in Zwischenablage",
                 "Lead - Salutation aus dem Primärkontakt in das unsichtbare Salutation übernehmen",

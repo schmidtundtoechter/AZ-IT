@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def export():
+def collect_rows():
     hooks = {}
     tree = ast.parse((ROOT / "az_it/hooks.py").read_text(encoding="utf-8"))
     for node in tree.body:
@@ -65,6 +65,11 @@ def export():
             status, note = "bei API-Aufruf", "cancel_todos_for_lead; aus js_scripts/lead.js aufgerufen."
         kind = "Client-Code" if path.suffix == ".js" else "Server-Code / Werkzeug"
         rows.append([kind, path.name, status, "", "", relative, note])
+    return rows
+
+
+def export():
+    rows = collect_rows()
     destination = ROOT / "SCRIPT_INVENTORY.csv"
     with destination.open("w", encoding="utf-8-sig", newline="") as stream:
         writer = csv.writer(stream, delimiter=";")

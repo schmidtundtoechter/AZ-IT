@@ -2,8 +2,6 @@
 Client Script;Angebot - Kundennummer ziehen;aktiviert;Quotation;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
 Client Script;Chance - Button legt Firmenname in die Zwischenablage;aktiviert;Opportunity;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
 Client Script;Chance - Entfernen falscher Mobilnummern;aktiviert;Opportunity;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
-Client Script;Internal Customer Series;aktiviert;Customer;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
-Client Script;Kunde - automatische Kundennummer;aktiviert;Customer;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
 Client Script;Lead - Auswahl Primärkontakt;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
 Client Script;Lead - Button - Legt Firmenname in Zwischenablage;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
 Client Script;Lead - Salutation aus dem Primärkontakt in das unsichtbare Salutation übernehmen;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
@@ -59,6 +57,8 @@ Server-Code / Werkzeug;remove_old_scripts.py;registriert;;;az_it/patches/v1_0/re
 Server-Code / Werkzeug;backup_sync.py;bei Aufruf / Hilfsdatei;;;backup_sync.py;
 Server-Code / Werkzeug;check-az.sh;bei Aufruf / Hilfsdatei;;;check-az.sh;
 Server-Code / Werkzeug;inspect-ca.sh;bei Aufruf / Hilfsdatei;;;inspect-ca.sh;
+Server-Code / Werkzeug;test_customer_numbering.py;bei Aufruf / Hilfsdatei;;;tests/test_customer_numbering.py;
 Server-Code / Werkzeug;test_versioning.py;bei Aufruf / Hilfsdatei;;;tests/test_versioning.py;
 Server-Code / Werkzeug;bump_version.py;bei Aufruf / Hilfsdatei;;;tools/bump_version.py;
 Server-Code / Werkzeug;script_inventory.py;bei Aufruf / Hilfsdatei;;;tools/script_inventory.py;
+Server-Code / Werkzeug;update_documentation.py;bei Aufruf / Hilfsdatei;;;tools/update_documentation.py;
