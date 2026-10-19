@@ -1,0 +1,64 @@
+﻿Typ;Name;Status im Repository;DocType;Ereignis;Datei;Hinweis
+Client Script;Angebot - Kundennummer ziehen;aktiviert;Quotation;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Chance - Button legt Firmenname in die Zwischenablage;aktiviert;Opportunity;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Chance - Entfernen falscher Mobilnummern;aktiviert;Opportunity;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Internal Customer Series;aktiviert;Customer;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Kunde - automatische Kundennummer;aktiviert;Customer;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Lead - Auswahl Primärkontakt;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Lead - Button - Legt Firmenname in Zwischenablage;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Lead - Salutation aus dem Primärkontakt in das unsichtbare Salutation übernehmen;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Lead - Telefon Zentrale Eingabekorrektur;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Lead Angebot Zugesendet ToDo;aktiviert;Lead;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Opportunity Angebot Zugesendet ToDo;aktiviert;Opportunity;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Zahlung - Schnellere Eingabe durch Befüllung von Referenznummer und R.-Datum;aktiviert;Payment Entry;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;ToDo - Aufgabe mit letztem Kommentar versehen;aktiviert;ToDo;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Ausgangsrechnung - E-Mail-Adresse an prim. Kontakt der Kontaktperson senden (Kontr je öffnen);aktiviert;Sales Invoice;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Client Script;Ausgangsrechnung - Zeitabrechnung optimieren - Standardkonten aus Unternehmen in Artikeltabelle einfügen;aktiviert;Sales Invoice;;az_it/fixtures/client_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Adresse - Umbenennung der ID nach Interner Typ und Typ.;aktiviert;Address;After Save;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Aufgabe (ToDo) automatische Wiedervorlage erzeugen (V2);aktiviert;;Cron;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Auftrag heraussuchen (Lieferschein);aktiviert;Delivery Note;Before Save;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Chance - Mutterunternehmen wird nach Speichern auf verlinkter Adresse u Kontakt jeweils verlinkt;aktiviert;Opportunity;After Save;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Customer Internal Number Auto Assignment - Update;aktiviert;Customer;Before Save;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Glockenbenachrichtigung bei eingehender Email;aktiviert;Communication;After Insert;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Lead - Mutterunternehmen wird nach Speichern auf verlinkter Adresse u Kontakt jeweils verlinkt;aktiviert;Lead;Before Save;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Lead - Pruefung neuer Aufgaben 4d nach WVL ToDo oder 2 davor, sonst Feld befüllen;aktiviert;Lead;Daily;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Lieferschein - ausliefernder_mitarbieter beim Speichern eintragen;aktiviert;Delivery Note;Before Save;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft."
+Server Script;Seriennummer - Eingangsrechnung über SN-Bündel ermitteln und eintragen;aktiviert;Purchase Invoice;Before Submit;az_it/fixtures/server_script.json;"Exportierter Datenbankstatus; Live-Installation ungeprüft. FEHLT in hooks.py fixtures: wird bei erneutem Export nicht ausgewählt."
+Server-Code / Werkzeug;script_inventory.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/api/script_inventory.py;
+Server-Code / Werkzeug;debug_dunning.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/debug_dunning.py;
+Server-Code / Werkzeug;test_wa_nummer.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/doctype/wa_nummer/test_wa_nummer.py;
+Client-Code;wa_nummer.js;DocType-Controller;;;az_it/az_it/doctype/wa_nummer/wa_nummer.js;"Automatisch für WA Nummer; tatsächliche Installation ungeprüft."
+Server-Code / Werkzeug;wa_nummer.py;DocType-Controller;;;az_it/az_it/doctype/wa_nummer/wa_nummer.py;"Automatisch für WA Nummer; tatsächliche Installation ungeprüft."
+Server-Code / Werkzeug;dunning_automation.py;registriert;;;az_it/az_it/dunning_automation.py;Scheduler: daily
+Client-Code;auto_repeat.js;registriert;;;az_it/az_it/js_scripts/auto_repeat.js;doctype_js: Auto Repeat
+Client-Code;customer.js;registriert;;;az_it/az_it/js_scripts/customer.js;doctype_js: Customer
+Client-Code;lead.js;registriert;;;az_it/az_it/js_scripts/lead.js;doctype_js: Lead
+Client-Code;quotation.js;registriert;;;az_it/az_it/js_scripts/quotation.js;doctype_js: Quotation
+Client-Code;sales_invoice.js;registriert;;;az_it/az_it/js_scripts/sales_invoice.js;doctype_js: Sales Invoice
+Client-Code;sales_order.js;registriert;;;az_it/az_it/js_scripts/sales_order.js;doctype_js: Sales Order
+Server-Code / Werkzeug;diagnostics_cli.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/page/system_diagnostics/diagnostics_cli.py;
+Server-Code / Werkzeug;diagnostics_core.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/page/system_diagnostics/diagnostics_core.py;
+Server-Code / Werkzeug;system_diagnostics.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/page/system_diagnostics/system_diagnostics.py;
+Server-Code / Werkzeug;lead.py;bei API-Aufruf;;;az_it/az_it/python_scripts/lead.py;"cancel_todos_for_lead; aus js_scripts/lead.js aufgerufen."
+Server-Code / Werkzeug;delivery_note_discount.py;registriert;;;az_it/az_it/python_scripts/overrides/delivery_note_discount.py;Delivery Note.validate: validate_custom_discount
+Server-Code / Werkzeug;item_description.py;registriert;;;az_it/az_it/python_scripts/overrides/item_description.py;Item.validate: prepend_item_name_to_description
+Server-Code / Werkzeug;lead.py;registriert;;;az_it/az_it/python_scripts/overrides/lead.py;API-Override: erpnext.crm.doctype.lead.lead.make_opportunity
+Server-Code / Werkzeug;quotation.py;registriert;;;az_it/az_it/python_scripts/overrides/quotation.py;Quotation.validate: validate_preisanpassung
+Server-Code / Werkzeug;quotation_discount.py;registriert;;;az_it/az_it/python_scripts/overrides/quotation_discount.py;Quotation.validate: validate_custom_discount
+Server-Code / Werkzeug;sales_invoice.py;registriert;;;az_it/az_it/python_scripts/overrides/sales_invoice.py;API-Override: erpnext.accounts.party.get_party_details
+Server-Code / Werkzeug;sales_invoice_auftrag.py;registriert;;;az_it/az_it/python_scripts/overrides/sales_invoice_auftrag.py;Sales Invoice.validate: auto_fill_auftrag_from_items
+Server-Code / Werkzeug;sales_invoice_discount.py;registriert;;;az_it/az_it/python_scripts/overrides/sales_invoice_discount.py;Sales Invoice.validate: validate_custom_discount
+Server-Code / Werkzeug;sales_invoice_email.py;registriert;;;az_it/az_it/python_scripts/overrides/sales_invoice_email.py;Communication.validate: set_invoice_email_sender
+Server-Code / Werkzeug;sales_order.py;registriert;;;az_it/az_it/python_scripts/overrides/sales_order.py;Sales Order.validate: validate_preisanpassung
+Server-Code / Werkzeug;sales_order_discount.py;registriert;;;az_it/az_it/python_scripts/overrides/sales_order_discount.py;Sales Order.validate: validate_custom_discount
+Server-Code / Werkzeug;create_wa_nummer_doctype.py;bei Aufruf / Hilfsdatei;;;az_it/az_it/setup/create_wa_nummer_doctype.py;
+Server-Code / Werkzeug;hooks.py;bei Aufruf / Hilfsdatei;;;az_it/hooks.py;
+Server-Code / Werkzeug;disable_clean_html_stock_setting.py;registriert;;;az_it/patches/v1_0/disable_clean_html_stock_setting.py;"Registrierter Migrationspatch; einmalig pro Site"
+Server-Code / Werkzeug;fix_blank_lines_in_descriptions.py;registriert;;;az_it/patches/v1_0/fix_blank_lines_in_descriptions.py;"Registrierter Migrationspatch; einmalig pro Site"
+Server-Code / Werkzeug;remove_old_scripts.py;registriert;;;az_it/patches/v1_0/remove_old_scripts.py;"Registrierter Migrationspatch; einmalig pro Site"
+Server-Code / Werkzeug;backup_sync.py;bei Aufruf / Hilfsdatei;;;backup_sync.py;
+Server-Code / Werkzeug;check-az.sh;bei Aufruf / Hilfsdatei;;;check-az.sh;
+Server-Code / Werkzeug;inspect-ca.sh;bei Aufruf / Hilfsdatei;;;inspect-ca.sh;
+Server-Code / Werkzeug;test_versioning.py;bei Aufruf / Hilfsdatei;;;tests/test_versioning.py;
+Server-Code / Werkzeug;bump_version.py;bei Aufruf / Hilfsdatei;;;tools/bump_version.py;
+Server-Code / Werkzeug;script_inventory.py;bei Aufruf / Hilfsdatei;;;tools/script_inventory.py;
